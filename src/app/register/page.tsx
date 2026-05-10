@@ -1,4 +1,4 @@
-import { Building2, UserPlus } from "lucide-react";
+import { Building2, CheckCircle2, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { registerAction } from "@/server/auth-actions";
 import { Button, Field, inputClass } from "@/components/ui";
@@ -103,6 +103,21 @@ export default async function RegisterPage({
             </Link>
           </p>
         </div>
+
+        {/* Benefits */}
+        <ul className="mt-6 space-y-2">
+          {[
+            "1 client + 1 devis gratuit sans carte",
+            "IA générative pour vos lignes de prestations",
+            "Marge, conformité et signature électronique inclus",
+            "Export Factur-X EN 16931 (obligation 2026)",
+          ].map((item) => (
+            <li key={item} className="flex items-center gap-2 text-xs text-muted">
+              <CheckCircle2 aria-hidden className="h-3.5 w-3.5 shrink-0 text-green-500" />
+              {item}
+            </li>
+          ))}
+        </ul>
 
         {/* Footer */}
         <p className="mt-6 text-center text-xs text-muted/70">
