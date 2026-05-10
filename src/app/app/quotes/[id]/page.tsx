@@ -454,19 +454,24 @@ export default async function QuoteDetailPage({
                   Envoyer le devis par email
                 </Button>
               </form>
-              {quote.emailDeliveries.slice(0, 3).map((delivery) => (
-                <div
-                  key={delivery.id}
-                  className="rounded-xl border border-border bg-white p-3 text-sm"
-                >
-                  <p className="font-semibold">
-                    {delivery.toEmail} · {delivery.status}
-                  </p>
-                  {delivery.errorMessage ? (
-                    <p className="mt-1 text-xs text-muted">{delivery.errorMessage}</p>
-                  ) : null}
-                </div>
-              ))}
+              {quote.emailDeliveries.slice(0, 3).map((delivery) => {
+                const statusLabel: Record<string, string> = { PENDING: "En attente", SENT: "Envoyé", FAILED: "Échec", SKIPPED: "Non envoyé" };
+                const statusColor: Record<string, string> = { SENT: "text-green-700", FAILED: "text-red-600", SKIPPED: "text-muted", PENDING: "text-amber-700" };
+                return (
+                  <div
+                    key={delivery.id}
+                    className="rounded-xl border border-border bg-white p-3 text-sm"
+                  >
+                    <p className="font-semibold">
+                      {delivery.toEmail} · <span className={statusColor[delivery.status] ?? "text-muted"}>{statusLabel[delivery.status] ?? delivery.status}</span>
+                    </p>
+                    {delivery.sentAt ? <p className="mt-0.5 text-xs text-muted">{formatShortFrenchDate(delivery.sentAt)}</p> : null}
+                    {delivery.errorMessage ? (
+                      <p className="mt-1 text-xs text-red-600">{delivery.errorMessage}</p>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           </Card>
 
@@ -560,8 +565,8 @@ export default async function QuoteDetailPage({
                     className="rounded-xl border border-border bg-white p-3 text-sm"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted">
-                        {formatShortFrenchDate(reminder.dueDate)} · {reminder.status}
+                      <span className={`${reminder.status === "DONE" ? "text-green-700" : reminder.status === "CANCELLED" ? "line-through text-muted" : "text-muted"}`}>
+                        {formatShortFrenchDate(reminder.dueDate)} · {{ PENDING: "À faire", DONE: "Fait", CANCELLED: "Annulé" }[reminder.status] ?? reminder.status}
                       </span>
                       {reminder.status === "PENDING" ? (
                         <form action={markFollowUpDoneAction.bind(null, reminder.id)}>
