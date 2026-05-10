@@ -5,6 +5,7 @@ import {
   Edit,
   FileDown,
   FileText,
+  Link2,
   Send,
   XCircle,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import {
   convertQuoteToInvoiceAction,
   duplicateQuoteAction,
   generateQuoteDocumentAction,
+  generateSignatureLinkAction,
   markFollowUpDoneAction,
   sendQuoteEmailAction,
 } from "@/server/actions";
@@ -61,6 +63,7 @@ export default async function QuoteDetailPage({
   const query = await searchParams;
   const { company, quote } = await getQuoteDetail(id);
   if (!quote) notFound();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
 
   const calculatedLines = quote.lines.map((line) =>
     calculateQuoteLine({
@@ -450,6 +453,58 @@ export default async function QuoteDetailPage({
                   ) : null}
                 </div>
               ))}
+            </div>
+          </Card>
+
+          {/* Signature électronique */}
+          <Card>
+            <CardHeader title="Signature électronique" />
+            <div className="space-y-4 p-6">
+              {quote.clientSignedAt ? (
+                <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm">
+                  <p className="font-semibold text-green-800">Devis signé</p>
+                  <p className="mt-0.5 text-green-700">
+                    Signé par le client le {formatShortFrenchDate(quote.clientSignedAt)}.
+                  </p>
+                  {quote.clientSignatureData ? (
+                    <img
+                      src={quote.clientSignatureData}
+                      alt="Signature client"
+                      className="mt-3 max-h-20 w-full rounded border border-green-200 bg-white object-contain"
+                    />
+                  ) : null}
+                </div>
+              ) : quote.signatureToken ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted">Lien de signature actif. Partagez-le avec votre client.</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      readOnly
+                      value={`${appUrl}/sign/${quote.signatureToken}`}
+                      className="w-full rounded-xl border border-border bg-slate-50 px-3 py-2 text-xs font-mono text-foreground"
+                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                    />
+                  </div>
+                  <form action={generateSignatureLinkAction.bind(null, quote.id)}>
+                    <Button type="submit" variant="secondary" size="sm">
+                      <Link2 aria-hidden className="h-3.5 w-3.5" />
+                      Regénérer le lien
+                    </Button>
+                  </form>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted">
+                    Générez un lien sécurisé pour que votre client signe le devis en ligne.
+                  </p>
+                  <form action={generateSignatureLinkAction.bind(null, quote.id)}>
+                    <Button type="submit" variant="secondary">
+                      <Link2 aria-hidden className="h-4 w-4" />
+                      Générer le lien de signature
+                    </Button>
+                  </form>
+                </div>
+              )}
             </div>
           </Card>
 

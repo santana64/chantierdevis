@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { addDays } from "date-fns";
 import { revalidatePath } from "next/cache";
@@ -1131,4 +1132,161 @@ export async function addQuoteNoteAction(quoteId: string, formData: FormData) {
   });
   revalidatePath(`/app/quotes/${quoteId}`);
   redirect(`/app/quotes/${quoteId}`);
+}
+
+export async function generateSignatureLinkAction(quoteId: string) {
+  const user = await getCurrentUser();
+  const quote = await prisma.quote.findFirst({ where: { id: quoteId, userId: user.id } });
+  if (!quote) throw new NotFoundError("Ce devis n'existe pas");
+
+  const token = randomBytes(32).toString("base64url");
+  await prisma.quote.update({ where: { id: quoteId }, data: { signatureToken: token } });
+
+  revalidatePath(`/app/quotes/${quoteId}`);
+  redirect(`/app/quotes/${quoteId}?sign=1`);
+}
+
+export async function submitSignatureAction(
+  token: string,
+  signatureData: string,
+): Promise<ActionResult> {
+  try {
+    if (!token || !signatureData) return { ok: false, message: "Données invalides" };
+
+    const quote = await prisma.quote.findUnique({ where: { signatureToken: token } });
+    if (!quote) return { ok: false, message: "Lien de signature invalide ou expiré." };
+    if (quote.clientSignedAt) return { ok: false, message: "Ce devis a déjà été signé." };
+    if (quote.validUntil < new Date()) return { ok: false, message: "Ce devis est expiré. Contactez l’artisan." };
+
+    await prisma.$transaction([
+      prisma.quote.update({
+        where: { id: quote.id },
+        data: { clientSignatureData: signatureData, clientSignedAt: new Date(), status: "ACCEPTED" },
+      }),
+      prisma.quoteEvent.create({
+        data: { quoteId: quote.id, type: "SIGNED", title: "Devis signé électroniquement par le client", eventDate: new Date() },
+      }),
+      prisma.followUpReminder.updateMany({
+        where: { quoteId: quote.id, status: "PENDING" },
+        data: { status: "DONE" },
+      }),
+    ]);
+
+    revalidatePath(`/app/quotes/${quote.id}`);
+    return { ok: true, data: undefined };
+  } catch (error) {
+    return toActionError(error);
+  }
+}
+
+const PRESET_CATALOG: Record<string, Array<{
+  title: string; description: string;
+  unit: "UNIT" | "HOUR" | "DAY" | "M2" | "M3" | "ML" | "PACKAGE";
+  defaultUnitPriceCents: number; defaultCostCents: number;
+  defaultVatRate: number; defaultLaborHours?: number;
+}>> = {
+  PLUMBING: [
+    { title: "Remplacement robinetterie évier", description: "Dépose ancien robinet, fourniture et pose robinet mélangeur standard.", unit: "UNIT", defaultUnitPriceCents: 12000, defaultCostCents: 4500, defaultVatRate: 10, defaultLaborHours: 1.5 },
+    { title: "Pose WC suspendu", description: "Fourniture et installation WC suspendu avec bâti-support, raccordement compris.", unit: "UNIT", defaultUnitPriceCents: 48000, defaultCostCents: 19000, defaultVatRate: 10, defaultLaborHours: 4 },
+    { title: "Installation douche à l'italienne", description: "Receveur 90×90 extra-plat, paroi, raccordements plomberie et évacuation.", unit: "UNIT", defaultUnitPriceCents: 120000, defaultCostCents: 52000, defaultVatRate: 10, defaultLaborHours: 8 },
+    { title: "Remplacement chauffe-eau électrique 200L", description: "Dépose et évacuation ancien appareil, fourniture et pose chauffe-eau stéatite 200L.", unit: "UNIT", defaultUnitPriceCents: 85000, defaultCostCents: 38000, defaultVatRate: 10, defaultLaborHours: 4 },
+    { title: "Débouchage canalisation", description: "Intervention débouchage par furet mécanique ou pression, bouchon standard.", unit: "UNIT", defaultUnitPriceCents: 15000, defaultCostCents: 4000, defaultVatRate: 10, defaultLaborHours: 1.5 },
+    { title: "Pose radiateur sèche-serviettes électrique", description: "Fourniture et pose radiateur sèche-serviettes 750W, câblage compris.", unit: "UNIT", defaultUnitPriceCents: 55000, defaultCostCents: 24000, defaultVatRate: 10, defaultLaborHours: 3 },
+  ],
+  PAINTING: [
+    { title: "Peinture murs et plafond", description: "Préparation surface, application sous-couche et 2 couches peinture acrylique mat.", unit: "M2", defaultUnitPriceCents: 2200, defaultCostCents: 700, defaultVatRate: 10, defaultLaborHours: 0.25 },
+    { title: "Enduit de lissage", description: "Application enduit de finition en 1 à 2 passes, ponçage, état lisse.", unit: "M2", defaultUnitPriceCents: 1800, defaultCostCents: 600, defaultVatRate: 10, defaultLaborHours: 0.25 },
+    { title: "Peinture boiseries fenêtres et portes", description: "Ponçage, apprêt et 2 couches peinture acrylique satin sur boiseries.", unit: "ML", defaultUnitPriceCents: 3500, defaultCostCents: 1200, defaultVatRate: 10, defaultLaborHours: 0.4 },
+    { title: "Pose papier peint intissé", description: "Préparation support, encollage mur, pose papier peint intissé fourni.", unit: "M2", defaultUnitPriceCents: 3200, defaultCostCents: 1500, defaultVatRate: 10, defaultLaborHours: 0.3 },
+    { title: "Peinture façade", description: "Nettoyage haute pression, primaire et 2 couches peinture façade microporeuse.", unit: "M2", defaultUnitPriceCents: 3800, defaultCostCents: 1400, defaultVatRate: 10, defaultLaborHours: 0.35 },
+    { title: "Décapage peinture ancienne", description: "Décapage thermique ou chimique, ponçage, préparation support.", unit: "M2", defaultUnitPriceCents: 2500, defaultCostCents: 800, defaultVatRate: 10, defaultLaborHours: 0.3 },
+  ],
+  TILING: [
+    { title: "Pose carrelage sol grès cérame", description: "Fourniture et pose carrelage 60×60, colle et joints inclus.", unit: "M2", defaultUnitPriceCents: 5500, defaultCostCents: 2200, defaultVatRate: 10, defaultLaborHours: 0.6 },
+    { title: "Pose faïence murale", description: "Fourniture et pose faïence 30×60, colle et joints inclus.", unit: "M2", defaultUnitPriceCents: 5800, defaultCostCents: 2400, defaultVatRate: 10, defaultLaborHours: 0.65 },
+    { title: "Dépose ancien carrelage", description: "Dépose et évacuation carrelage existant, nettoyage support.", unit: "M2", defaultUnitPriceCents: 2000, defaultCostCents: 500, defaultVatRate: 10, defaultLaborHours: 0.3 },
+    { title: "Pose plinthes carrelage", description: "Fourniture et pose plinthes assorties, coupe onglets incluse.", unit: "ML", defaultUnitPriceCents: 2500, defaultCostCents: 900, defaultVatRate: 10, defaultLaborHours: 0.3 },
+    { title: "Ragréage sol autonivelant", description: "Application ragréage autonivelant pour mise à niveau et lissage support.", unit: "M2", defaultUnitPriceCents: 1800, defaultCostCents: 700, defaultVatRate: 10, defaultLaborHours: 0.2 },
+    { title: "Réfection joints carrelage", description: "Dépose anciens joints, nettoyage, nouveaux joints époxy ou ciment.", unit: "M2", defaultUnitPriceCents: 2800, defaultCostCents: 800, defaultVatRate: 10, defaultLaborHours: 0.4 },
+  ],
+  MASONRY: [
+    { title: "Démolition cloison plâtre", description: "Démolition et évacuation cloison existante, rebouchage liaison murs.", unit: "M2", defaultUnitPriceCents: 3500, defaultCostCents: 1000, defaultVatRate: 10, defaultLaborHours: 0.4 },
+    { title: "Montage cloison placo BA13", description: "Ossature métallique 70mm, double plaque BA13, bande et enduit joints.", unit: "M2", defaultUnitPriceCents: 7500, defaultCostCents: 3000, defaultVatRate: 10, defaultLaborHours: 0.8 },
+    { title: "Chape béton allégée", description: "Application chape béton allégée e=5cm, dressage et lissage.", unit: "M2", defaultUnitPriceCents: 3500, defaultCostCents: 1400, defaultVatRate: 10, defaultLaborHours: 0.4 },
+    { title: "Reprise enduit extérieur", description: "Piquage zones décollées, application enduit hydraulique 3 couches.", unit: "M2", defaultUnitPriceCents: 6500, defaultCostCents: 2500, defaultVatRate: 10, defaultLaborHours: 0.7 },
+    { title: "Percement mur porteur", description: "Carottage mur béton ou maçonnerie, linteau posé si nécessaire.", unit: "UNIT", defaultUnitPriceCents: 35000, defaultCostCents: 12000, defaultVatRate: 10, defaultLaborHours: 6 },
+    { title: "Saignée et rebouchage", description: "Réalisation saignée pour encastrement conduit, rebouchage enduit.", unit: "ML", defaultUnitPriceCents: 3500, defaultCostCents: 1200, defaultVatRate: 10, defaultLaborHours: 0.4 },
+  ],
+  ELECTRICITY: [
+    { title: "Pose prise de courant 16A", description: "Fourniture et pose prise encastrée 16A 2P+T, câblage compris.", unit: "UNIT", defaultUnitPriceCents: 8500, defaultCostCents: 2800, defaultVatRate: 10, defaultLaborHours: 1.5 },
+    { title: "Pose interrupteur simple allumage", description: "Fourniture et pose interrupteur encastré simple allumage, câblage compris.", unit: "UNIT", defaultUnitPriceCents: 7500, defaultCostCents: 2200, defaultVatRate: 10, defaultLaborHours: 1.2 },
+    { title: "Mise aux normes tableau électrique", description: "Remplacement tableau, disjoncteurs différentiels et divisionnaires NF C15-100.", unit: "UNIT", defaultUnitPriceCents: 125000, defaultCostCents: 52000, defaultVatRate: 10, defaultLaborHours: 12 },
+    { title: "Pose luminaire plafonnier encastrable", description: "Fourniture et pose plafonnier encastré ou apparent, câblage et fixation.", unit: "UNIT", defaultUnitPriceCents: 9500, defaultCostCents: 3200, defaultVatRate: 10, defaultLaborHours: 1.5 },
+    { title: "Installation VMC simple flux hygro B", description: "Fourniture et pose VMC hygro B, bouches, conduits et piquage réseau.", unit: "UNIT", defaultUnitPriceCents: 75000, defaultCostCents: 32000, defaultVatRate: 10, defaultLaborHours: 8 },
+    { title: "Pose détecteur de fumée certifié", description: "Fourniture et pose détecteur ionique normé AFNOR NF EN 14604.", unit: "UNIT", defaultUnitPriceCents: 4500, defaultCostCents: 1500, defaultVatRate: 10, defaultLaborHours: 0.5 },
+  ],
+  CARPENTRY: [
+    { title: "Pose porte intérieure prépeinte", description: "Fourniture et pose porte 204×83 avec huisserie, quincaillerie incluse.", unit: "UNIT", defaultUnitPriceCents: 42000, defaultCostCents: 17000, defaultVatRate: 10, defaultLaborHours: 4 },
+    { title: "Remplacement fenêtre PVC double vitrage", description: "Dépose ancienne menuiserie, fourniture et pose fenêtre PVC Uw≤1.3.", unit: "UNIT", defaultUnitPriceCents: 95000, defaultCostCents: 45000, defaultVatRate: 5.5, defaultLaborHours: 8 },
+    { title: "Pose parquet contrecollé 14mm", description: "Fourniture et pose parquet contrecollé clippage flottant, plinthes incluses.", unit: "M2", defaultUnitPriceCents: 6500, defaultCostCents: 2800, defaultVatRate: 10, defaultLaborHours: 0.6 },
+    { title: "Pose plinthes MDF prépeintes", description: "Fourniture et pose plinthes 70mm, coupe onglets, mastic joints.", unit: "ML", defaultUnitPriceCents: 1800, defaultCostCents: 700, defaultVatRate: 10, defaultLaborHours: 0.2 },
+    { title: "Pose garde-corps escalier", description: "Fourniture et pose garde-corps métallique ou bois, fixation renforcée.", unit: "ML", defaultUnitPriceCents: 28000, defaultCostCents: 12000, defaultVatRate: 10, defaultLaborHours: 3 },
+  ],
+  HEATING: [
+    { title: "Remplacement radiateur acier", description: "Dépose ancien radiateur, fourniture et pose radiateur acier, raccordements.", unit: "UNIT", defaultUnitPriceCents: 55000, defaultCostCents: 22000, defaultVatRate: 5.5, defaultLaborHours: 5 },
+    { title: "Entretien annuel chaudière gaz", description: "Nettoyage brûleur, vérification combustion, contrôle sécurités, rapport.", unit: "UNIT", defaultUnitPriceCents: 18000, defaultCostCents: 5500, defaultVatRate: 10, defaultLaborHours: 2 },
+    { title: "Pose thermostat programmable connecté", description: "Fourniture et pose thermostat connecté, paramétrage plages horaires.", unit: "UNIT", defaultUnitPriceCents: 28000, defaultCostCents: 11000, defaultVatRate: 5.5, defaultLaborHours: 2.5 },
+    { title: "Désembouage réseau chauffage", description: "Nettoyage chimique circuit, rinçage, ajout inhibiteur anticorrosion.", unit: "UNIT", defaultUnitPriceCents: 45000, defaultCostCents: 15000, defaultVatRate: 10, defaultLaborHours: 5 },
+    { title: "Remplacement vase d'expansion", description: "Dépose et remplacement vase d'expansion membrane + pressurisation circuit.", unit: "UNIT", defaultUnitPriceCents: 19000, defaultCostCents: 7000, defaultVatRate: 10, defaultLaborHours: 2 },
+  ],
+  ROOFING: [
+    { title: "Remplacement tuiles cassées", description: "Dépose tuiles cassées, fourniture et repose tuiles assorties.", unit: "UNIT", defaultUnitPriceCents: 3500, defaultCostCents: 1200, defaultVatRate: 10, defaultLaborHours: 0.4 },
+    { title: "Nettoyage et traitement toiture", description: "Nettoyage haute pression, application traitement antimousse hydrofuge.", unit: "M2", defaultUnitPriceCents: 2800, defaultCostCents: 900, defaultVatRate: 10, defaultLaborHours: 0.3 },
+    { title: "Réfection faîtage au mortier", description: "Dépose faîtière, rejointoiement ou repose au mortier hydraulique.", unit: "ML", defaultUnitPriceCents: 9500, defaultCostCents: 3500, defaultVatRate: 10, defaultLaborHours: 1 },
+    { title: "Pose gouttière zinc demi-ronde", description: "Dépose vétuste, fourniture et pose gouttière demi-ronde zinc 333.", unit: "ML", defaultUnitPriceCents: 8500, defaultCostCents: 3800, defaultVatRate: 10, defaultLaborHours: 0.9 },
+    { title: "Réparation velux fenêtre de toit", description: "Remplacement joint étanchéité, vérification cadre, remise en état.", unit: "UNIT", defaultUnitPriceCents: 32000, defaultCostCents: 12000, defaultVatRate: 10, defaultLaborHours: 4 },
+  ],
+  INSULATION: [
+    { title: "Isolation combles perdus soufflée", description: "Fourniture et mise en œuvre laine minérale soufflée e=25cm R≥7.", unit: "M2", defaultUnitPriceCents: 2800, defaultCostCents: 1100, defaultVatRate: 5.5, defaultLaborHours: 0.25 },
+    { title: "Isolation murs intérieure ITI", description: "Doublage complexe polyuréthane 100mm sur ossature, BA13 inclus.", unit: "M2", defaultUnitPriceCents: 9500, defaultCostCents: 4200, defaultVatRate: 5.5, defaultLaborHours: 0.9 },
+    { title: "Isolation plancher bas PSE", description: "Pose panneaux PSE 80mm sous plancher, fixation chevilles.", unit: "M2", defaultUnitPriceCents: 4800, defaultCostCents: 1900, defaultVatRate: 5.5, defaultLaborHours: 0.45 },
+    { title: "Isolation thermique extérieure ITE", description: "Pose système ITE : colle, panneaux PSE 120mm, enduit armé, finition.", unit: "M2", defaultUnitPriceCents: 18000, defaultCostCents: 8500, defaultVatRate: 5.5, defaultLaborHours: 1.5 },
+    { title: "Pose pare-vapeur continu", description: "Fourniture et pose pare-vapeur continu, raccords et adhésifs inclus.", unit: "M2", defaultUnitPriceCents: 1200, defaultCostCents: 450, defaultVatRate: 5.5, defaultLaborHours: 0.15 },
+  ],
+  GENERAL_RENOVATION: [
+    { title: "Nettoyage de fin de chantier", description: "Nettoyage complet, évacuation déchets, remise en état des accès.", unit: "HOUR", defaultUnitPriceCents: 4500, defaultCostCents: 1500, defaultVatRate: 10, defaultLaborHours: 1 },
+    { title: "Protection chantier sol et mobilier", description: "Mise en place protections sols et meubles, signalisation accès.", unit: "PACKAGE", defaultUnitPriceCents: 18000, defaultCostCents: 7000, defaultVatRate: 10, defaultLaborHours: 3 },
+    { title: "Déplacement et transport matériel", description: "Déplacement zone d'intervention, transport matériaux et outillage.", unit: "UNIT", defaultUnitPriceCents: 6500, defaultCostCents: 2500, defaultVatRate: 10, defaultLaborHours: 1 },
+    { title: "Coordination et suivi de chantier", description: "Gestion planning, réunions chantier, suivi sous-traitants.", unit: "HOUR", defaultUnitPriceCents: 8500, defaultCostCents: 2800, defaultVatRate: 10, defaultLaborHours: 1 },
+    { title: "Fournitures diverses et consommables", description: "Visserie, chevilles, colles, mastics et consommables divers.", unit: "PACKAGE", defaultUnitPriceCents: 15000, defaultCostCents: 9000, defaultVatRate: 10 },
+  ],
+};
+
+export async function importPresetItemsAction(formData: FormData) {
+  const user = await getCurrentUser();
+  try {
+    await assertPlanLimit(user, "workItems");
+  } catch {
+    redirect("/app/billing?limit=workItems");
+  }
+  const trade = stringFromForm(formData.get("trade"));
+  if (!trade || !(trade in PRESET_CATALOG)) redirect("/app/items?error=invalid-trade");
+
+  const presets = PRESET_CATALOG[trade];
+  await prisma.workItem.createMany({
+    data: presets.map((item) => ({
+      userId: user.id,
+      title: item.title,
+      description: item.description,
+      trade: trade as never,
+      unit: item.unit as never,
+      defaultUnitPriceCents: item.defaultUnitPriceCents,
+      defaultCostCents: item.defaultCostCents,
+      defaultVatRate: new Prisma.Decimal(item.defaultVatRate),
+      defaultLaborHours: item.defaultLaborHours != null ? new Prisma.Decimal(item.defaultLaborHours) : null,
+    })),
+  });
+
+  revalidatePath("/app/items");
+  redirect(`/app/items?trade=${trade}&imported=${presets.length}`);
 }

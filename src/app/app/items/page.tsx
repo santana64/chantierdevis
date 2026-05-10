@@ -1,11 +1,12 @@
-import { Copy, LibraryBig, Search, Trash2 } from "lucide-react";
+import { Copy, Download, LibraryBig, Search, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
-import { Button, Card, CardHeader, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
+import { Button, Card, CardHeader, EmptyState, Field, LinkButton, SuccessNotice, inputClass } from "@/components/ui";
 import { formatMoney } from "@/domain/quotes";
 import {
   createWorkItemAction,
   deleteWorkItemAction,
   duplicateWorkItemAction,
+  importPresetItemsAction,
   updateWorkItemAction,
 } from "@/server/actions";
 import { getWorkItemsData } from "@/server/queries";
@@ -50,6 +51,7 @@ export default async function ItemsPage({
 }) {
   const params = await searchParams;
   const filters = { q: value(params, "q"), trade: value(params, "trade") };
+  const imported = value(params, "imported");
   const { workItems } = await getWorkItemsData(filters);
 
   return (
@@ -65,6 +67,32 @@ export default async function ItemsPage({
           Cet ouvrage est déjà utilisé dans un devis. Dupliquez-le ou modifiez-le au lieu de le supprimer.
         </div>
       ) : null}
+      {imported ? (
+        <div className="mb-6">
+          <SuccessNotice>{imported} ouvrages types importés dans votre bibliothèque.</SuccessNotice>
+        </div>
+      ) : null}
+
+      {/* Preset importer */}
+      <Card className="mb-6">
+        <CardHeader
+          title="Importer des ouvrages types"
+          description="Ajoutez en un clic les prestations standards de votre métier avec prix, coût et TVA pré-remplis."
+        />
+        <form action={importPresetItemsAction} className="flex flex-wrap items-end gap-3 p-5">
+          <Field label="Métier">
+            <select className={inputClass} name="trade" defaultValue="PLUMBING">
+              {trades.filter((t) => t !== "ALL").map((t) => (
+                <option key={t} value={t}>{tradeLabels[t]}</option>
+              ))}
+            </select>
+          </Field>
+          <Button type="submit" variant="secondary">
+            <Download aria-hidden className="h-4 w-4" />
+            Importer les ouvrages types
+          </Button>
+        </form>
+      </Card>
 
       <section className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
         <Card>
