@@ -382,7 +382,7 @@ export default async function QuoteDetailPage({
               <div className="flex items-center justify-between gap-3 px-6 py-3">
                 <dt className="text-muted">Action suivante</dt>
                 <dd className="text-right font-semibold">
-                  {getQuoteNextAction({ status: quote.status })}
+                  {nextAction}
                 </dd>
               </div>
             </dl>
