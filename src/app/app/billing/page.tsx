@@ -2,7 +2,6 @@ import { CheckCircle2, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button, Card, CardHeader, LegalDisclaimer } from "@/components/ui";
 import { PLAN_LIMITS } from "@/domain/billing/plans";
-import { getStripeSetupIssues } from "@/lib/stripe";
 import {
   createBillingPortalSessionAction,
   createCheckoutSessionAction,
@@ -35,7 +34,6 @@ export default async function BillingPage({
 }) {
   const params = await searchParams;
   const { user, usage } = await getBillingData();
-  const stripeIssues = getStripeSetupIssues();
 
   return (
     <>
@@ -53,15 +51,6 @@ export default async function BillingPage({
       {params.error ? (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
           Paiement non disponible\u00a0: vérifiez la configuration Stripe.
-        </div>
-      ) : null}
-      {stripeIssues.length > 0 ? (
-        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-          <p className="font-semibold">Stripe sandbox incomplet</p>
-          <p className="mt-1">Le billing reste consultable, mais Checkout et le portail sont indisponibles.</p>
-          <ul className="mt-2 list-disc pl-5">
-            {stripeIssues.map((issue) => <li key={issue}>{issue}</li>)}
-          </ul>
         </div>
       ) : null}
       {params.checkout === "success" ? (

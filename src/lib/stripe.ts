@@ -11,7 +11,9 @@ export function getStripe() {
 }
 
 export function getAppUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://127.0.0.1:3001";
+  const url = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
+  if (!url) throw new Error("APP_URL is not configured");
+  return url;
 }
 
 export function getStripeSetupIssues() {

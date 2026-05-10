@@ -233,10 +233,11 @@ export default async function SettingsPage({
               />
             </Field>
             <div className="rounded-xl border border-border bg-white p-4 text-sm text-muted md:col-span-2">
-              <p className="font-semibold text-foreground">Logo</p>
+              <p className="font-semibold text-foreground">Logo entreprise</p>
               <p className="mt-1">
-                La personnalisation du logo n&apos;est pas activée dans cette version. Les documents
-                utilisent l&apos;identité entreprise renseignée ci-dessus.
+                Renseignez le nom, l&apos;adresse et les coordonnées ci-dessus : ils apparaissent en
+                en-tête de chaque devis. L&apos;import de logo personnalisé sera disponible dans une
+                prochaine version.
               </p>
             </div>
             <Field label="Pied de document">

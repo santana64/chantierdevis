@@ -1,7 +1,6 @@
 import { Building2, Lock } from "lucide-react";
 import Link from "next/link";
 import { loginAction } from "@/server/auth-actions";
-import { DEMO_USER_EMAIL, DEMO_USER_PASSWORD } from "@/lib/auth";
 import { Button, Field, inputClass } from "@/components/ui";
 
 function message(error?: string) {
@@ -107,14 +106,6 @@ export default async function LoginPage({
               Se connecter
             </Button>
           </form>
-
-          {/* Demo credentials */}
-          <div className="mt-5 rounded-xl border border-border bg-slate-50 px-4 py-3 text-xs text-muted">
-            <p className="font-semibold text-foreground">Compte de démonstration</p>
-            <p className="mt-1">
-              {DEMO_USER_EMAIL} · {DEMO_USER_PASSWORD}
-            </p>
-          </div>
 
           {/* Links */}
           <div className="mt-5 space-y-2.5 text-sm text-muted">
