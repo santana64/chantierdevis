@@ -142,7 +142,7 @@ export default async function InvoiceDetailPage({
                     <span>Déjà encaissé</span><strong>{formatMoney(invoice.amountPaidCents)}</strong>
                   </div>
                   <div className="flex justify-between border-t border-border px-4 py-3 font-bold text-primary">
-                    <span>Reste dû</span><strong>{formatMoney(invoice.totalTtcCents - invoice.amountPaidCents)}</strong>
+                    <span>Reste dû</span><strong>{formatMoney((vatMode === "FRANCHISE_BASE" ? invoice.subtotalHtCents : invoice.totalTtcCents) - invoice.amountPaidCents)}</strong>
                   </div>
                 </>
               )}
