@@ -1529,3 +1529,15 @@ export async function extendQuoteValidityAction(quoteId: string) {
   revalidatePath(`/app/quotes/${quoteId}`);
   redirect(`/app/quotes/${quoteId}?extended=1`);
 }
+
+// ─── Cancel invoice ────────────────────────────────────────────────────────────
+
+export async function cancelInvoiceAction(invoiceId: string) {
+  const user = await getCurrentUser();
+  await prisma.invoice.updateMany({
+    where: { id: invoiceId, userId: user.id, status: { not: "PAID" } },
+    data: { status: "CANCELLED" },
+  });
+  revalidatePath(`/app/invoices/${invoiceId}`);
+  redirect(`/app/invoices/${invoiceId}`);
+}

@@ -32,6 +32,7 @@ export default async function InvoicesPage({
   const params = await searchParams;
   const activeStatus = sp(params, "status") || "ALL";
   const reminded = sp(params, "reminded");
+  const clientFilter = sp(params, "client") || null;
 
   const { user } = await getAppContext();
   const now = new Date();
@@ -47,6 +48,7 @@ export default async function InvoicesPage({
       where: {
         userId: user.id,
         ...(activeStatus !== "ALL" ? { status: activeStatus as never } : {}),
+        ...(clientFilter ? { clientId: clientFilter } : {}),
       },
       include: {
         client: { select: { id: true, name: true, companyName: true, email: true } },
@@ -78,6 +80,15 @@ export default async function InvoicesPage({
       {reminded ? (
         <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-800">
           Relance envoyée au client avec succès.
+        </div>
+      ) : null}
+
+      {clientFilter ? (
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm text-blue-800">
+          Filtré par client ·
+          <Link href="/app/invoices" className="font-semibold underline underline-offset-4">
+            Voir toutes les factures
+          </Link>
         </div>
       ) : null}
 

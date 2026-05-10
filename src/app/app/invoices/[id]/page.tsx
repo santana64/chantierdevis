@@ -1,4 +1,4 @@
-import { CheckCircle2, Download, ExternalLink, Send } from "lucide-react";
+import { Ban, CheckCircle2, Download, ExternalLink, Send } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
@@ -8,6 +8,7 @@ import { getInvoiceDetail } from "@/server/queries";
 import {
   issueInvoiceAction,
   markInvoicePaidAction,
+  cancelInvoiceAction,
   createInvoicePaymentLinkAction,
 } from "@/server/actions";
 import InvoicePaymentLinkButton from "./InvoicePaymentLinkButton";
@@ -163,6 +164,15 @@ export default async function InvoiceDetailPage({
                   >
                     <CheckCircle2 className="h-4 w-4" />
                     Marquer comme payée
+                  </button>
+                </form>
+                <form action={cancelInvoiceAction.bind(null, invoice.id)}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-muted hover:bg-slate-50 hover:text-foreground"
+                  >
+                    <Ban className="h-4 w-4" />
+                    Annuler la facture
                   </button>
                 </form>
               </div>
