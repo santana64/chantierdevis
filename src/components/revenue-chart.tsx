@@ -62,7 +62,7 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
               fontSize="10"
               fill="#94a3b8"
             >
-              {tick.val === 0 ? "0" : `${Math.round(tick.val / 100 / 1000)}k`}
+              {tick.val === 0 ? "0" : tick.val < 100000 ? `${Math.round(tick.val / 100)}€` : `${Math.round(tick.val / 100000)}k€`}
             </text>
           </g>
         ))}

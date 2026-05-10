@@ -277,16 +277,6 @@ export async function getBillingData() {
   };
 }
 
-export async function getInvoicesData() {
-  const { user } = await getAppContext();
-  const invoices = await prisma.invoice.findMany({
-    where: { userId: user.id },
-    include: { client: true, quote: true },
-    orderBy: { issueDate: "desc" },
-  });
-  return { invoices };
-}
-
 export async function getInvoiceDetail(invoiceId: string) {
   const { user, company } = await getAppContext();
   const invoice = await prisma.invoice.findFirst({
