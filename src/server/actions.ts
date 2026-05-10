@@ -1439,3 +1439,93 @@ export async function createInvoicePaymentLinkAction(invoiceId: string): Promise
     return toActionError(error);
   }
 }
+
+// ─── Invoice reminder ─────────────────────────────────────────────────────────
+
+export async function sendInvoiceReminderAction(invoiceId: string) {
+  const user = await getCurrentUser();
+  const invoice = await prisma.invoice.findFirst({
+    where: { id: invoiceId, userId: user.id },
+    include: {
+      client: true,
+      lines: { orderBy: { position: "asc" } },
+    },
+  });
+  if (!invoice || !invoice.client.email) redirect(`/app/invoices?error=no-email`);
+  if (invoice.status !== "ISSUED" && invoice.status !== "OVERDUE") redirect(`/app/invoices`);
+
+  const company = await prisma.companyProfile.findUnique({ where: { userId: user.id } });
+  const clientName = invoice.client.companyName || invoice.client.name;
+  const companyName = company?.companyName ?? "Votre prestataire";
+  const dueStr = new Intl.DateTimeFormat("fr-FR").format(invoice.dueDate);
+  const totalStr = (invoice.totalTtcCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const isOverdue = invoice.dueDate < new Date();
+
+  const subject = isOverdue
+    ? `[RAPPEL] Facture ${invoice.invoiceNumber} — règlement en attente`
+    : `Rappel d'échéance — Facture ${invoice.invoiceNumber}`;
+
+  const html = `
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8" /><title>Relance facture</title></head>
+<body style="margin:0;padding:0;background:#f5f2ec;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:32px auto;background:#fffdf8;border-radius:12px;overflow:hidden;border:1px solid #e2d9c8;">
+    <div style="background:#1f3b57;padding:24px 32px;">
+      <p style="margin:0;font-size:20px;font-weight:700;color:#fff;">${companyName}</p>
+      <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.6);">Relance de paiement</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="font-size:15px;color:#1f2933;">Bonjour ${clientName},</p>
+      <p style="font-size:15px;color:#1f2933;line-height:1.6;">
+        ${isOverdue
+    ? `Sauf erreur de notre part, nous n'avons pas encore reçu le règlement de la facture <strong>${invoice.invoiceNumber}</strong>, dont l'échéance était le <strong>${dueStr}</strong>.`
+    : `Nous vous rappelons que la facture <strong>${invoice.invoiceNumber}</strong> arrive à échéance le <strong>${dueStr}</strong>.`
+  }
+      </p>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:24px 0;">
+        <p style="margin:0 0 8px;font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Montant à régler</p>
+        <p style="margin:0;font-size:28px;font-weight:800;color:#1f3b57;">${totalStr}</p>
+        <p style="margin:8px 0 0;font-size:13px;color:#64748b;">Facture n° ${invoice.invoiceNumber}</p>
+      </div>
+      <p style="font-size:14px;color:#64748b;line-height:1.6;">${invoice.paymentTerms}</p>
+      <p style="font-size:14px;color:#1f2933;">Merci de nous contacter si vous avez le moindre doute sur cette facture.</p>
+      <p style="font-size:14px;color:#1f2933;margin-top:24px;">Cordialement,<br /><strong>${companyName}</strong></p>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 32px;font-size:11px;color:#94a3b8;">
+      Ce message a été envoyé via ChantierDevis. Pour toute question, contactez directement l'émetteur.
+    </div>
+  </div>
+</body></html>`;
+
+  const text = `Bonjour ${clientName},\n\n${isOverdue ? `La facture ${invoice.invoiceNumber} était due le ${dueStr}. Montant: ${totalStr}.` : `La facture ${invoice.invoiceNumber} est due le ${dueStr}. Montant: ${totalStr}.`}\n\n${invoice.paymentTerms}\n\nCordialement,\n${companyName}`;
+
+  await sendTransactionalEmail({ to: invoice.client.email, subject, html, text });
+  redirect(`/app/invoices?reminded=1`);
+}
+
+// ─── Quote validity extension ─────────────────────────────────────────────────
+
+export async function extendQuoteValidityAction(quoteId: string) {
+  const user = await getCurrentUser();
+  const quote = await prisma.quote.findFirst({ where: { id: quoteId, userId: user.id } });
+  if (!quote) redirect(`/app/quotes`);
+
+  const currentValid = quote.validUntil < new Date() ? new Date() : quote.validUntil;
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: {
+      validUntil: addDays(currentValid, 30),
+      status: quote.status === "EXPIRED" ? "READY" : quote.status,
+    },
+  });
+  await prisma.quoteEvent.create({
+    data: {
+      quoteId,
+      type: "UPDATED",
+      title: "Validité prolongée de 30 jours",
+      eventDate: new Date(),
+    },
+  });
+  revalidatePath(`/app/quotes/${quoteId}`);
+  redirect(`/app/quotes/${quoteId}?extended=1`);
+}

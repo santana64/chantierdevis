@@ -63,6 +63,23 @@ export function ComplianceBadge({ status }: { status: ComplianceStatus }) {
   );
 }
 
+const invoiceStatusConfig: Record<string, { label: string; style: string }> = {
+  DRAFT:     { label: "Brouillon",  style: "border-slate-200 bg-slate-50 text-slate-600" },
+  ISSUED:    { label: "Émise",      style: "border-blue-200 bg-blue-50 text-blue-800" },
+  PAID:      { label: "Payée",      style: "border-green-200 bg-green-50 text-green-800" },
+  OVERDUE:   { label: "En retard",  style: "border-red-200 bg-red-50 text-red-800" },
+  CANCELLED: { label: "Annulée",    style: "border-slate-200 bg-slate-50 text-slate-500" },
+};
+
+export function InvoiceStatusBadge({ status }: { status: string }) {
+  const cfg = invoiceStatusConfig[status] ?? { label: status, style: "border-slate-200 bg-slate-50 text-slate-600" };
+  return (
+    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold", cfg.style)}>
+      {cfg.label}
+    </span>
+  );
+}
+
 export function MarginBadge({ marginRate }: { marginRate: number }) {
   const style =
     marginRate >= 35

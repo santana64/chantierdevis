@@ -1,4 +1,5 @@
-import { endOfMonth, startOfMonth } from "date-fns";
+import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   computeAcceptanceRate,
   computeAverageMargin,
@@ -16,76 +17,98 @@ export async function getAppContext() {
 export async function getDashboardData() {
   const { user, company } = await getAppContext();
   const now = new Date();
-  const [quotes, reminders] = await Promise.all([
+  const twelveMonthsAgo = subMonths(startOfMonth(now), 11);
+
+  const [quotes, reminders, invoices] = await Promise.all([
     prisma.quote.findMany({
       where: { userId: user.id, status: { not: "ARCHIVED" } },
       include: {
         client: true,
         followUpReminders: true,
-        invoices: { select: { id: true } },
+        invoices: { select: { id: true, invoiceNumber: true } },
       },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.followUpReminder.findMany({
       where: { quote: { userId: user.id } },
     }),
+    prisma.invoice.findMany({
+      where: { userId: user.id, issueDate: { gte: twelveMonthsAgo } },
+      select: { id: true, issueDate: true, dueDate: true, totalTtcCents: true, status: true, invoiceNumber: true, clientId: true },
+    }),
   ]);
 
-  const monthQuotes = quotes.filter((quote) => {
-    const issueDate = new Date(quote.issueDate);
-    return issueDate >= startOfMonth(now) && issueDate <= endOfMonth(now);
+  // Auto-update overdue invoices
+  await prisma.invoice.updateMany({
+    where: { userId: user.id, status: "ISSUED", dueDate: { lt: now } },
+    data: { status: "OVERDUE" },
   });
-  const acceptedQuotes = quotes.filter((quote) => quote.status === "ACCEPTED");
+
+  const monthQuotes = quotes.filter((q) => {
+    const d = new Date(q.issueDate);
+    return d >= startOfMonth(now) && d <= endOfMonth(now);
+  });
+  const acceptedQuotes = quotes.filter((q) => q.status === "ACCEPTED");
   const followUps = getQuotesNeedingFollowUp(
-    quotes.map((quote) => ({
-      id: quote.id,
-      status: quote.status,
-      totalTtcCents: quote.totalTtcCents,
-      grossMarginRate: Number(quote.grossMarginRate),
-      issueDate: quote.issueDate,
-      validUntil: quote.validUntil,
-      updatedAt: quote.updatedAt,
+    quotes.map((q) => ({
+      id: q.id,
+      status: q.status,
+      totalTtcCents: q.totalTtcCents,
+      grossMarginRate: Number(q.grossMarginRate),
+      issueDate: q.issueDate,
+      validUntil: q.validUntil,
+      updatedAt: q.updatedAt,
     })),
-    reminders.map((reminder) => ({
-      quoteId: reminder.quoteId,
-      dueDate: reminder.dueDate,
-      status: reminder.status,
-    })),
+    reminders.map((r) => ({ quoteId: r.quoteId, dueDate: r.dueDate, status: r.status })),
     now,
   );
+
+  // Monthly revenue chart — last 12 months
+  const monthlyRevenue = Array.from({ length: 12 }, (_, i) => {
+    const start = startOfMonth(subMonths(now, 11 - i));
+    const end = endOfMonth(start);
+    const mq = quotes.filter((q) => { const d = new Date(q.issueDate); return d >= start && d <= end; });
+    const mi = invoices.filter((inv) => { const d = new Date(inv.issueDate); return d >= start && d <= end && inv.status !== "CANCELLED"; });
+    return {
+      label: format(start, "MMM", { locale: fr }),
+      quotedCents: mq.reduce((s, q) => s + q.totalTtcCents, 0),
+      acceptedCents: mq.filter((q) => q.status === "ACCEPTED").reduce((s, q) => s + q.totalTtcCents, 0),
+      invoicedCents: mi.reduce((s, inv) => s + inv.totalTtcCents, 0),
+    };
+  });
+
+  const unpaidInvoices = invoices.filter((inv) => inv.status === "ISSUED" || inv.status === "OVERDUE");
+  const overdueInvoices = invoices.filter((inv) => inv.status === "OVERDUE" || (inv.status === "ISSUED" && inv.dueDate < now));
 
   return {
     user,
     company,
     quotes,
+    monthlyRevenue,
+    invoiceStats: {
+      unpaidCents: unpaidInvoices.reduce((s, inv) => s + inv.totalTtcCents, 0),
+      unpaidCount: unpaidInvoices.length,
+      overdueCount: overdueInvoices.length,
+    },
     stats: {
       quotesThisMonth: monthQuotes.length,
-      totalQuotedCents: monthQuotes.reduce((sum, quote) => sum + quote.totalTtcCents, 0),
-      acceptedAmountCents: acceptedQuotes.reduce((sum, quote) => sum + quote.totalTtcCents, 0),
+      totalQuotedCents: monthQuotes.reduce((s, q) => s + q.totalTtcCents, 0),
+      acceptedAmountCents: acceptedQuotes.reduce((s, q) => s + q.totalTtcCents, 0),
       acceptanceRate: computeAcceptanceRate(quotes),
-      averageMargin: computeAverageMargin(
-        quotes.map((quote) => ({
-          status: quote.status,
-          grossMarginRate: Number(quote.grossMarginRate),
-        })),
-      ),
-      awaitingClient: quotes.filter((quote) => quote.status === "SENT").length,
+      averageMargin: computeAverageMargin(quotes.map((q) => ({ status: q.status, grossMarginRate: Number(q.grossMarginRate) }))),
+      awaitingClient: quotes.filter((q) => q.status === "SENT").length,
       needingFollowUp: followUps.length,
-      expired: quotes.filter((quote) => quote.status === "EXPIRED" || quote.validUntil < now).length,
-      incompleteDrafts: quotes.filter(
-        (quote) => quote.status === "DRAFT" || quote.complianceStatus === "INCOMPLETE",
-      ).length,
+      expired: quotes.filter((q) => q.status === "EXPIRED" || q.validUntil < now).length,
+      incompleteDrafts: quotes.filter((q) => q.status === "DRAFT" || q.complianceStatus === "INCOMPLETE").length,
     },
     urgent: {
       followUps,
-      incompleteDrafts: quotes.filter(
-        (quote) => quote.status === "DRAFT" || quote.complianceStatus === "INCOMPLETE",
-      ),
-      expiringSoon: quotes.filter((quote) => {
-        const days = Math.ceil((quote.validUntil.getTime() - now.getTime()) / 86_400_000);
-        return quote.status === "SENT" && days >= 0 && days <= 3;
+      incompleteDrafts: quotes.filter((q) => q.status === "DRAFT" || q.complianceStatus === "INCOMPLETE"),
+      expiringSoon: quotes.filter((q) => {
+        const days = Math.ceil((q.validUntil.getTime() - now.getTime()) / 86_400_000);
+        return q.status === "SENT" && days >= 0 && days <= 3;
       }),
-      acceptedWithoutInvoice: acceptedQuotes.filter((quote) => quote.invoices.length === 0),
+      acceptedWithoutInvoice: acceptedQuotes.filter((q) => q.invoices.length === 0),
     },
     recentQuotes: quotes.slice(0, 8),
   };
