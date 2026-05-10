@@ -233,6 +233,8 @@ export default function Home() {
           </div>
           <nav className="hidden items-center gap-6 text-sm font-semibold text-white/70 sm:flex" aria-label="Navigation principale">
             <Link href="#workflow" className="transition hover:text-white">Fonctionnement</Link>
+            <Link href="#fonctionnalites" className="transition hover:text-white">Fonctionnalités</Link>
+            <Link href="#temoignages" className="transition hover:text-white">Témoignages</Link>
             <Link href="#tarifs" className="transition hover:text-white">Tarifs</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -413,7 +415,7 @@ export default function Home() {
       </section>
 
       {/* FEATURES */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <section id="fonctionnalites" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-widest text-accent">Fonctionnalités</p>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Tout ce qu&apos;un outil BTP doit faire.</h2>
@@ -488,7 +490,7 @@ export default function Home() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="bg-[#fefcf7] py-20">
+      <section id="temoignages" className="bg-[#fefcf7] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-sm font-bold uppercase tracking-widest text-accent">Témoignages</p>

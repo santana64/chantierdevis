@@ -96,7 +96,17 @@ export default async function QuotesPage({
                   placeholder="N° devis, client, projet…"
                 />
               </label>
-              <Button type="submit">Filtrer</Button>
+              <div className="flex gap-2">
+                <Button type="submit">Filtrer</Button>
+                {(filters.q || (filters.status && filters.status !== "ALL") || (filters.client && filters.client !== "ALL") || (filters.trade && filters.trade !== "ALL") || filters.min || filters.max || filters.from || filters.to) && (
+                  <Link
+                    href="/app/quotes"
+                    className="inline-flex h-10 items-center gap-1.5 rounded-md border border-border bg-white px-4 text-sm font-semibold text-muted shadow-sm hover:border-[#c0c9d8] hover:bg-[#fffdf8] hover:text-foreground transition"
+                  >
+                    × Réinitialiser
+                  </Link>
+                )}
+              </div>
             </div>
             {/* Other filters */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">

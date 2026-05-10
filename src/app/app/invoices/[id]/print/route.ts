@@ -123,14 +123,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       border-radius: 8px;
       overflow: hidden;
     }
-    .totals div {
+    .totals-row {
       display: flex;
       justify-content: space-between;
       gap: 24px;
       padding: 10px 14px;
       border-bottom: 1px solid #e2e8f0;
     }
-    .totals div:last-child {
+    .totals-final {
       border-bottom: 0;
       background: #1f3b57;
       color: white;
@@ -226,9 +226,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     ${vatMode === "FRANCHISE_BASE" ? `<p class="muted"><strong>TVA non applicable, art. 293 B du CGI</strong></p>` : ""}
 
     <section class="totals" aria-label="Totaux facture">
-      <div><span>Total HT</span><strong>${formatMoney(invoice.subtotalHtCents)}</strong></div>
-      <div><span>Total TVA</span><strong>${formatMoney(invoice.totalVatCents)}</strong></div>
-      <div><span>Total TTC</span><strong>${formatMoney(invoice.totalTtcCents)}</strong></div>
+      <div class="totals-row"><span>Total HT</span><strong>${formatMoney(invoice.subtotalHtCents)}</strong></div>
+      <div class="totals-row"><span>Total TVA</span><strong>${formatMoney(invoice.totalVatCents)}</strong></div>
+      ${invoice.amountPaidCents > 0 && invoice.status !== "PAID" ? `
+      <div class="totals-row"><span>Total TTC</span><strong>${formatMoney(invoice.totalTtcCents)}</strong></div>
+      <div class="totals-row" style="color: #16a34a"><span>Déjà encaissé</span><strong>${formatMoney(invoice.amountPaidCents)}</strong></div>
+      <div class="totals-row totals-final"><span>Reste dû</span><strong>${formatMoney(invoice.totalTtcCents - invoice.amountPaidCents)}</strong></div>
+      ` : `<div class="totals-row totals-final"><span>Total TTC</span><strong>${formatMoney(invoice.totalTtcCents)}</strong></div>`}
     </section>
 
     <section class="box" style="margin-top: 24px;">
@@ -238,8 +242,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     </section>
 
     <footer>
+      ${company?.documentFooterText ? `<p style="white-space: pre-line">${paragraph(company.documentFooterText)}</p>` : ""}
+      ${company?.insuranceProvider ? `<p>Assurance décennale : ${escapeHtml(company.insuranceProvider)}${company.insurancePolicyNumber ? ` — police n° ${escapeHtml(company.insurancePolicyNumber)}` : ""}</p>` : ""}
       <p>Facture générée par ChantierDevis. Source : devis ${escapeHtml(invoice.quote.quoteNumber)}.</p>
-      <p>Ce document reprend les données saisies par l'utilisateur. ChantierDevis ne remplace pas un expert-comptable, un avocat ou un conseil juridique personnalisé.</p>
     </footer>
   </article>
 </body>

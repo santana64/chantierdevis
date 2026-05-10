@@ -66,7 +66,7 @@ export default async function InvoicesPage({
     }),
     prisma.invoice.findMany({
       where: { userId: user.id },
-      select: { status: true, totalTtcCents: true },
+      select: { status: true, totalTtcCents: true, issueDate: true },
     }),
   ]);
 
@@ -76,6 +76,12 @@ export default async function InvoicesPage({
   const overdueCount = allInvoices.filter((inv) => inv.status === "OVERDUE").length;
   const paidTotal = allInvoices
     .filter((inv) => inv.status === "PAID")
+    .reduce((s, inv) => s + inv.totalTtcCents, 0);
+  const thisMonthInvoiced = allInvoices
+    .filter((inv) => {
+      const d = new Date(inv.issueDate);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && inv.status !== "CANCELLED";
+    })
     .reduce((s, inv) => s + inv.totalTtcCents, 0);
 
   return (
@@ -110,7 +116,7 @@ export default async function InvoicesPage({
       ) : null}
 
       {/* Summary */}
-      <div className="mb-5 grid gap-4 sm:grid-cols-3">
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-border bg-white p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">À encaisser</p>
           <p className={`mt-2 text-2xl font-black tabular-nums ${unpaidTotal > 0 ? "text-primary" : "text-foreground"}`}>
@@ -126,6 +132,12 @@ export default async function InvoicesPage({
         <div className="rounded-xl border border-border bg-white p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Encaissé (total)</p>
           <p className="mt-2 text-2xl font-black tabular-nums text-green-700">{formatMoney(paidTotal)}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">Facturé ce mois</p>
+          <p className={`mt-2 text-2xl font-black tabular-nums ${thisMonthInvoiced > 0 ? "text-primary" : "text-foreground"}`}>
+            {formatMoney(thisMonthInvoiced)}
+          </p>
         </div>
       </div>
 
@@ -178,9 +190,17 @@ export default async function InvoicesPage({
           </div>
         ) : (
           <>
-            <div className="border-b border-border px-5 py-3 text-sm text-muted">
-              <span className="font-semibold text-foreground">{invoices.length}</span>{" "}
-              facture{invoices.length !== 1 ? "s" : ""}
+            <div className="flex items-center justify-between border-b border-border px-5 py-3 text-sm text-muted">
+              <span>
+                <span className="font-semibold text-foreground">{invoices.length}</span>{" "}
+                facture{invoices.length !== 1 ? "s" : ""}
+              </span>
+              <span>
+                Total :{" "}
+                <span className="font-semibold tabular-nums text-foreground">
+                  {formatMoney(invoices.reduce((s, inv) => s + inv.totalTtcCents, 0))}
+                </span>
+              </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[920px] text-sm">

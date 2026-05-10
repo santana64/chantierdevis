@@ -61,8 +61,32 @@ export default async function DashboardPage() {
 
       {/* KPI row 1 */}
       <section aria-label="Indicateurs du mois" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Devis ce mois-ci" value={`${data.stats.quotesThisMonth}`} icon={<FileText className="h-5 w-5" />} />
-        <StatCard label="CA devisé ce mois" value={formatMoney(data.stats.totalQuotedCents)} icon={<Euro className="h-5 w-5" />} />
+        <StatCard
+          label="Devis ce mois-ci"
+          value={`${data.stats.quotesThisMonth}`}
+          detail={(() => {
+            const prev = data.stats.prevMonthQuotesCount;
+            const curr = data.stats.quotesThisMonth;
+            if (prev === 0 && curr === 0) return undefined;
+            if (prev === 0) return `+${curr} vs mois précédent`;
+            const pct = Math.round(((curr - prev) / prev) * 100);
+            return pct > 0 ? `↑ +${pct} % vs mois précédent` : pct < 0 ? `↓ ${pct} % vs mois précédent` : "= mois précédent";
+          })()}
+          icon={<FileText className="h-5 w-5" />}
+        />
+        <StatCard
+          label="CA devisé ce mois"
+          value={formatMoney(data.stats.totalQuotedCents)}
+          detail={(() => {
+            const prev = data.stats.prevMonthQuotedCents;
+            const curr = data.stats.totalQuotedCents;
+            if (prev === 0 && curr === 0) return undefined;
+            if (prev === 0) return `+${formatMoney(curr)} vs mois précédent`;
+            const pct = Math.round(((curr - prev) / prev) * 100);
+            return pct > 0 ? `↑ +${pct} % vs mois précédent` : pct < 0 ? `↓ ${pct} % vs mois précédent` : "= mois précédent";
+          })()}
+          icon={<Euro className="h-5 w-5" />}
+        />
         <StatCard label="CA accepté (cumulé)" value={formatMoney(data.stats.acceptedAmountCents)} icon={<CheckCircle2 className="h-5 w-5" />} accent="green" />
         <StatCard
           label="À encaisser"

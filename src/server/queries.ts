@@ -48,6 +48,12 @@ export async function getDashboardData() {
     const d = new Date(q.issueDate);
     return d >= startOfMonth(now) && d <= endOfMonth(now);
   });
+  const prevMonthStart = startOfMonth(subMonths(now, 1));
+  const prevMonthEnd = endOfMonth(subMonths(now, 1));
+  const prevMonthQuotes = quotes.filter((q) => {
+    const d = new Date(q.issueDate);
+    return d >= prevMonthStart && d <= prevMonthEnd;
+  });
   const acceptedQuotes = quotes.filter((q) => q.status === "ACCEPTED");
   const followUps = getQuotesNeedingFollowUp(
     quotes.map((q) => ({
@@ -100,6 +106,8 @@ export async function getDashboardData() {
       needingFollowUp: followUps.length,
       expired: quotes.filter((q) => q.status === "EXPIRED" || q.validUntil < now).length,
       incompleteDrafts: quotes.filter((q) => q.status === "DRAFT" || q.complianceStatus === "INCOMPLETE").length,
+      prevMonthQuotesCount: prevMonthQuotes.length,
+      prevMonthQuotedCents: prevMonthQuotes.reduce((s, q) => s + q.totalTtcCents, 0),
     },
     urgent: {
       followUps,

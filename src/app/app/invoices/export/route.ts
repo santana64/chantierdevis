@@ -25,7 +25,7 @@ export async function GET() {
     orderBy: { issueDate: "desc" },
   });
 
-  const header = ["N° Facture", "Devis", "Client", "Date émission", "Échéance", "Statut", "HT (€)", "TVA (€)", "TTC (€)", "Payé (€)"].map(csvEsc).join(";");
+  const header = ["N° Facture", "Devis", "Client", "Date émission", "Échéance", "Statut", "HT (€)", "TVA (€)", "TTC (€)", "Payé (€)", "Reste dû (€)"].map(csvEsc).join(";");
   const rows = invoices.map((inv) => [
     csvEsc(inv.invoiceNumber),
     csvEsc(inv.quote.quoteNumber),
@@ -37,6 +37,7 @@ export async function GET() {
     csvEsc((inv.totalVatCents / 100).toFixed(2).replace(".", ",")),
     csvEsc((inv.totalTtcCents / 100).toFixed(2).replace(".", ",")),
     csvEsc((inv.amountPaidCents / 100).toFixed(2).replace(".", ",")),
+    csvEsc(((inv.totalTtcCents - inv.amountPaidCents) / 100).toFixed(2).replace(".", ",")),
   ].join(";"));
 
   const csv = "﻿" + [header, ...rows].join("\r\n");

@@ -198,7 +198,13 @@ export default async function QuoteDetailPage({
             </LinkButton>
           ) : (
             <form action={convertQuoteToInvoiceAction.bind(null, quote.id)}>
-              <Button size="sm" variant="secondary" type="submit" disabled={quote.status !== "ACCEPTED"}>
+              <Button
+                size="sm"
+                variant="secondary"
+                type="submit"
+                disabled={quote.status !== "ACCEPTED"}
+                title={quote.status !== "ACCEPTED" ? "Acceptez d'abord le devis pour le convertir" : undefined}
+              >
                 Convertir en facture
               </Button>
             </form>
