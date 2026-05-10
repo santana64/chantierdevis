@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/app-shell";
 import { Button, Card, CardHeader, Field, LegalDisclaimer, SectionDivider, inputClass } from "@/components/ui";
 import { saveCompanyProfileAction } from "@/server/actions";
+import { updateAccountAction } from "@/server/auth-actions";
 import { getAppContext } from "@/server/queries";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export default async function SettingsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const { company } = await getAppContext();
+  const { user, company } = await getAppContext();
 
   return (
     <>
@@ -22,6 +23,21 @@ export default async function SettingsPage({
       {params.saved ? (
         <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-900">
           Profil entreprise enregistré avec succès.
+        </div>
+      ) : null}
+      {params.account === "saved" ? (
+        <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-900">
+          Informations du compte mises à jour.
+        </div>
+      ) : null}
+      {params.account === "wrong-password" ? (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+          Mot de passe actuel incorrect.
+        </div>
+      ) : null}
+      {params.account === "weak-password" ? (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+          Le nouveau mot de passe doit contenir au moins 10 caractères.
         </div>
       ) : null}
 
@@ -260,6 +276,45 @@ export default async function SettingsPage({
             <div>
               <Button type="submit">Enregistrer les paramètres</Button>
             </div>
+          </div>
+        </form>
+      </Card>
+
+      {/* Account settings */}
+      <Card className="mt-6">
+        <CardHeader
+          title="Mon compte"
+          description="Modifiez votre nom affiché ou changez votre mot de passe."
+        />
+        <form action={updateAccountAction} className="grid gap-4 p-6 md:grid-cols-2">
+          <Field label="Nom affiché">
+            <input
+              className={inputClass}
+              name="name"
+              defaultValue={user.name}
+              required
+              minLength={2}
+            />
+          </Field>
+          <Field label="Email (lecture seule)">
+            <input
+              className={inputClass}
+              value={user.email}
+              disabled
+              readOnly
+            />
+          </Field>
+          <div className="md:col-span-2">
+            <SectionDivider label="Changer le mot de passe (optionnel)" />
+          </div>
+          <Field label="Mot de passe actuel">
+            <input className={inputClass} name="currentPassword" type="password" autoComplete="current-password" />
+          </Field>
+          <Field label="Nouveau mot de passe (10 car. min)">
+            <input className={inputClass} name="newPassword" type="password" autoComplete="new-password" minLength={10} />
+          </Field>
+          <div>
+            <Button type="submit">Mettre à jour le compte</Button>
           </div>
         </form>
       </Card>

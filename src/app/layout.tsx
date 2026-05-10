@@ -13,14 +13,34 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ChantierDevis - Devis BTP conformes et rentables",
+  title: {
+    default: "ChantierDevis — Devis BTP avec IA, facturation Factur-X",
+    template: "%s | ChantierDevis",
+  },
   description:
-    "Créez des devis BTP propres, conformes et rentables en quelques minutes.",
+    "Créez des devis BTP conformes et rentables en 2 minutes. IA générative, marge visible, signature électronique, facturation Factur-X EN 16931. À partir de 19 €/mois.",
+  keywords: ["devis BTP", "logiciel devis artisan", "facturation Factur-X", "devis plombier", "devis peintre", "conformité devis"],
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "ChantierDevis",
+    title: "ChantierDevis — Devis BTP avec IA, facturation Factur-X",
+    description: "Créez des devis BTP conformes et rentables en 2 minutes. IA générative, marge visible, signature électronique, facturation Factur-X.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ChantierDevis — Devis BTP avec IA",
+    description: "Devis BTP conformes et rentables en 2 minutes.",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     title: "ChantierDevis",
     statusBarStyle: "default",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

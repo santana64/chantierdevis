@@ -340,3 +340,31 @@ export async function resetPasswordAction(formData: FormData) {
   await clearAuthFailures("password-reset-confirm", tokenHash);
   redirect("/login?reset=success");
 }
+
+export async function updateAccountAction(formData: FormData) {
+  const user = await getCurrentUser();
+  const name = stringFromForm(formData.get("name")).trim();
+  const currentPassword = stringFromForm(formData.get("currentPassword"));
+  const newPassword = stringFromForm(formData.get("newPassword"));
+
+  const updates: { name?: string; passwordHash?: string } = {};
+
+  if (name && name.length >= 2) {
+    updates.name = name;
+  }
+
+  if (newPassword) {
+    if (newPassword.length < 10) redirect("/app/settings?account=weak-password");
+    const currentHash = await prisma.user.findUnique({ where: { id: user.id }, select: { passwordHash: true } });
+    if (!currentHash?.passwordHash || !verifyPassword(currentPassword, currentHash.passwordHash)) {
+      redirect("/app/settings?account=wrong-password");
+    }
+    updates.passwordHash = hashPassword(newPassword);
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await prisma.user.update({ where: { id: user.id }, data: updates });
+  }
+
+  redirect("/app/settings?account=saved");
+}
