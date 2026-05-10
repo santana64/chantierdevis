@@ -146,9 +146,11 @@ export default async function InvoicesPage({
         <div className="flex flex-wrap gap-2">
           {STATUS_TABS.map((tab) => {
             const isActive = tab.value === activeStatus;
-            const href = tab.value === "ALL"
-              ? (q ? `/app/invoices?q=${encodeURIComponent(q)}` : "/app/invoices")
-              : (q ? `/app/invoices?status=${tab.value}&q=${encodeURIComponent(q)}` : `/app/invoices?status=${tab.value}`);
+            const parts: string[] = [];
+            if (tab.value !== "ALL") parts.push(`status=${tab.value}`);
+            if (q) parts.push(`q=${encodeURIComponent(q)}`);
+            if (clientFilter) parts.push(`client=${encodeURIComponent(clientFilter)}`);
+            const href = `/app/invoices${parts.length ? `?${parts.join("&")}` : ""}`;
             return (
               <Link
                 key={tab.value}
@@ -166,6 +168,7 @@ export default async function InvoicesPage({
         </div>
         <form className="relative shrink-0">
           {activeStatus !== "ALL" && <input type="hidden" name="status" value={activeStatus} />}
+          {clientFilter && <input type="hidden" name="client" value={clientFilter} />}
           <Search aria-hidden className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
             name="q"
