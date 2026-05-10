@@ -222,6 +222,37 @@ const faqs = [
 export default function Home() {
   return (
     <main className="bg-background text-foreground">
+      {/* STICKY NAV */}
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0f1f31]/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 text-white">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent">
+              <Hammer aria-hidden className="h-3.5 w-3.5 text-white" />
+            </div>
+            <span className="font-black tracking-tight">ChantierDevis</span>
+          </div>
+          <nav className="hidden items-center gap-6 text-sm font-semibold text-white/70 sm:flex" aria-label="Navigation principale">
+            <Link href="#workflow" className="transition hover:text-white">Fonctionnement</Link>
+            <Link href="#tarifs" className="transition hover:text-white">Tarifs</Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="hidden rounded-lg px-3 py-1.5 text-sm font-semibold text-white/70 transition hover:text-white sm:inline-flex"
+            >
+              Connexion
+            </Link>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-white transition hover:bg-[#cc5810]"
+            >
+              Essai gratuit
+              <ArrowRight aria-hidden className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </header>
+
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#0f1f31] text-white">
         <div

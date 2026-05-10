@@ -155,6 +155,7 @@ export async function getQuoteListData(filters: {
       client: true,
       followUpReminders: true,
       lines: true,
+      invoices: { select: { id: true, invoiceNumber: true, status: true } },
     },
     orderBy: { updatedAt: "desc" },
   });

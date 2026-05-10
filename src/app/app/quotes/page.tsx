@@ -1,4 +1,4 @@
-import { Copy, Eye, FileDown, Search, SlidersHorizontal } from "lucide-react";
+import { Copy, Eye, FileDown, Receipt, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/app-shell";
 import { ComplianceBadge, MarginBadge, QuoteStatusBadge } from "@/components/badges";
@@ -240,6 +240,7 @@ export default async function QuotesPage({
                     <th className="px-6 py-3">Validité</th>
                     <th className="px-6 py-3 text-right">Total TTC</th>
                     <th className="px-6 py-3">Marge</th>
+                    <th className="px-6 py-3">Facture</th>
                     <th className="px-6 py-3">Actions</th>
                   </tr>
                 </thead>
@@ -275,6 +276,19 @@ export default async function QuotesPage({
                       </td>
                       <td className="px-6 py-4">
                         <MarginBadge marginRate={Number(quote.grossMarginRate)} />
+                      </td>
+                      <td className="px-6 py-4">
+                        {quote.invoices[0] ? (
+                          <Link
+                            href={`/app/invoices/${quote.invoices[0].id}`}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          >
+                            <Receipt aria-hidden className="h-3.5 w-3.5" />
+                            {quote.invoices[0].invoiceNumber}
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-muted/50">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1.5">

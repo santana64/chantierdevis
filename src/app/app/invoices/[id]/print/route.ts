@@ -171,7 +171,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       <div class="meta">
         <p><strong>Date d'émission :</strong> ${formatShortFrenchDate(invoice.issueDate)}</p>
         <p><strong>Échéance :</strong> ${formatShortFrenchDate(invoice.dueDate)}</p>
-        <p><strong>Statut :</strong> ${escapeHtml(invoice.status)}</p>
+        <p><strong>Statut :</strong> ${{ DRAFT: "Brouillon", ISSUED: "Émise", PAID: "Payée", OVERDUE: "En retard", CANCELLED: "Annulée" }[invoice.status] ?? escapeHtml(invoice.status)}</p>
       </div>
     </section>
 
