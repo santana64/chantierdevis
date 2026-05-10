@@ -1357,3 +1357,85 @@ export async function generateAIQuoteLinesAction(
     return toActionError(error);
   }
 }
+
+// ─── Invoice lifecycle ────────────────────────────────────────────────────────
+
+export async function issueInvoiceAction(invoiceId: string) {
+  const user = await getCurrentUser();
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, userId: user.id } });
+  if (!invoice || invoice.status !== "DRAFT") redirect(`/app/invoices/${invoiceId}`);
+
+  await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: { status: "ISSUED" },
+  });
+  revalidatePath(`/app/invoices/${invoiceId}`);
+  revalidatePath("/app/invoices");
+  redirect(`/app/invoices/${invoiceId}?issued=1`);
+}
+
+export async function markInvoicePaidAction(invoiceId: string) {
+  const user = await getCurrentUser();
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, userId: user.id } });
+  if (!invoice || invoice.status === "PAID" || invoice.status === "CANCELLED") {
+    redirect(`/app/invoices/${invoiceId}`);
+  }
+
+  await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: { status: "PAID", amountPaidCents: invoice.totalTtcCents },
+  });
+  revalidatePath(`/app/invoices/${invoiceId}`);
+  revalidatePath("/app/invoices");
+  redirect(`/app/invoices/${invoiceId}?paid=1`);
+}
+
+export async function createInvoicePaymentLinkAction(invoiceId: string): Promise<ActionResult<string>> {
+  try {
+    const user = await getCurrentUser();
+    if (!process.env.STRIPE_SECRET_KEY) return { ok: false, message: "Stripe non configuré sur ce compte." };
+
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: invoiceId, userId: user.id },
+      include: { client: true },
+    });
+    if (!invoice) return { ok: false, message: "Facture introuvable." };
+    if (invoice.status === "PAID" || invoice.status === "CANCELLED") {
+      return { ok: false, message: "Cette facture ne peut plus être payée en ligne." };
+    }
+    if (invoice.stripePaymentLinkUrl) return { ok: true, data: invoice.stripePaymentLinkUrl };
+
+    const { getStripe, getAppUrl } = await import("@/lib/stripe");
+    const stripe = getStripe();
+    const appUrl = getAppUrl();
+
+    const price = await stripe.prices.create({
+      currency: "eur",
+      unit_amount: invoice.totalTtcCents,
+      product_data: { name: `Facture ${invoice.invoiceNumber}` },
+    });
+
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: { invoiceId, userId: user.id },
+      after_completion: {
+        type: "redirect",
+        redirect: { url: `${appUrl}/app/invoices/${invoiceId}?paid=1` },
+      },
+    });
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        stripePaymentLinkId: paymentLink.id,
+        stripePaymentLinkUrl: paymentLink.url,
+        status: invoice.status === "DRAFT" ? "ISSUED" : invoice.status,
+      },
+    });
+
+    revalidatePath(`/app/invoices/${invoiceId}`);
+    return { ok: true, data: paymentLink.url };
+  } catch (error) {
+    return toActionError(error);
+  }
+}

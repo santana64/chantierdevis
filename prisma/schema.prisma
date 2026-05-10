@@ -414,9 +414,11 @@ model Invoice {
   subtotalHtCents Int           @default(0)
   totalVatCents   Int           @default(0)
   totalTtcCents   Int           @default(0)
-  amountPaidCents Int           @default(0)
-  notesToClient   String?       @db.Text
-  lines           InvoiceLine[]
+  amountPaidCents      Int           @default(0)
+  stripePaymentLinkId  String?       @unique
+  stripePaymentLinkUrl String?
+  notesToClient        String?       @db.Text
+  lines                InvoiceLine[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

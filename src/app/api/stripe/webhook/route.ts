@@ -49,10 +49,21 @@ export async function POST(request: Request) {
   }
 
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as StripeCheckoutSessionPayload;
+    const session = event.data.object as StripeCheckoutSessionPayload & { amount_total?: number };
+    const { invoiceId } = session.metadata ?? {};
+
+    // Invoice payment via Stripe Payment Link
+    if (invoiceId) {
+      await prisma.invoice.updateMany({
+        where: { id: invoiceId },
+        data: { status: "PAID", amountPaidCents: session.amount_total ?? 0 },
+      });
+      return NextResponse.json({ received: true });
+    }
+
+    // Subscription checkout
     const userId = session.metadata?.userId;
     const plan = planFromMetadata(session.metadata?.plan);
-
     if (userId) {
       await prisma.user.updateMany({
         where: { id: userId },
