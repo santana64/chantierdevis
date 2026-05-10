@@ -25,7 +25,7 @@ function PlanBadge({ plan }: { plan: SubscriptionPlan }) {
   );
 }
 
-export function AppShell({ children, user }: { children: ReactNode; user: User }) {
+export function AppShell({ children, user, companyName }: { children: ReactNode; user: User; companyName?: string | null }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Sidebar desktop */}
@@ -84,7 +84,7 @@ export function AppShell({ children, user }: { children: ReactNode; user: User }
             </Link>
             {/* Desktop: context label */}
             <div className="hidden lg:block">
-              <p className="text-sm font-medium text-muted">Espace artisan</p>
+              <p className="text-sm font-medium text-muted">{companyName ?? "Espace artisan"}</p>
             </div>
             {/* CTA */}
             <div className="flex items-center gap-3">

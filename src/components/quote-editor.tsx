@@ -592,27 +592,52 @@ export function QuoteEditor({
               <tbody>
                 {lines.map((line, index) => {
                   const calculated = calculatedLines[index];
+                  const orderCells = (
+                    <td className="px-3 py-3">
+                      <div className="flex gap-1">
+                        <Button type="button" size="sm" variant="ghost" aria-label="Monter la ligne" onClick={() => moveLine(index, -1)}>
+                          <ArrowUp aria-hidden className="h-4 w-4" />
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" aria-label="Descendre la ligne" onClick={() => moveLine(index, 1)}>
+                          <ArrowDown aria-hidden className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  );
+                  const typeCell = (
+                    <td className="px-3 py-3">
+                      <select className={inputClass} value={line.type} onChange={(event) => updateLine(index, { type: event.target.value as QuoteLineType })}>
+                        {Object.entries(lineTypeLabels).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </td>
+                  );
+                  if (line.type === "SECTION") {
+                    return (
+                      <tr key={`${index}-section`} className="border-t-2 border-slate-300 bg-slate-50 align-middle">
+                        {orderCells}
+                        {typeCell}
+                        <td colSpan={8} className="px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              className={`${inputClass} flex-1 font-semibold`}
+                              value={line.title}
+                              onChange={(event) => updateLine(index, { title: event.target.value })}
+                              placeholder="Titre de section"
+                            />
+                            <Button type="button" size="sm" variant="ghost" aria-label="Supprimer la section" onClick={() => setLines((current) => current.filter((_, i) => i !== index))}>
+                              <Trash2 aria-hidden className="h-4 w-4 text-danger" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
                   return (
                     <tr key={`${index}-${line.workItemId ?? "manual"}`} className="border-t border-border bg-card align-top">
-                      <td className="px-3 py-3">
-                        <div className="flex gap-1">
-                          <Button type="button" size="sm" variant="ghost" aria-label="Monter la ligne" onClick={() => moveLine(index, -1)}>
-                            <ArrowUp aria-hidden className="h-4 w-4" />
-                          </Button>
-                          <Button type="button" size="sm" variant="ghost" aria-label="Descendre la ligne" onClick={() => moveLine(index, 1)}>
-                            <ArrowDown aria-hidden className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <select className={inputClass} value={line.type} onChange={(event) => updateLine(index, { type: event.target.value as QuoteLineType })}>
-                          {Object.entries(lineTypeLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
+                      {orderCells}
+                      {typeCell}
                       <td className="min-w-72 px-3 py-3">
                         <input className={inputClass} value={line.title} onChange={(event) => updateLine(index, { title: event.target.value })} placeholder="Désignation" />
                         <textarea className={`${inputClass} mt-2`} rows={2} value={line.description} onChange={(event) => updateLine(index, { description: event.target.value })} placeholder="Description détaillée" />
@@ -623,9 +648,7 @@ export function QuoteEditor({
                       <td className="px-3 py-3">
                         <select className={inputClass} value={line.unit} onChange={(event) => updateLine(index, { unit: event.target.value as Unit })}>
                           {Object.entries(unitLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
+                            <option key={value} value={value}>{label}</option>
                           ))}
                         </select>
                       </td>
@@ -638,9 +661,7 @@ export function QuoteEditor({
                       <td className="px-3 py-3">
                         <select className={inputClass} value={company.vatMode === "FRANCHISE_BASE" ? 0 : line.vatRate} disabled={company.vatMode === "FRANCHISE_BASE"} onChange={(event) => updateLine(index, { vatRate: Number(event.target.value) })}>
                           {[0, 5.5, 10, 20].map((rate) => (
-                            <option key={rate} value={rate}>
-                              {rate} %
-                            </option>
+                            <option key={rate} value={rate}>{rate} %</option>
                           ))}
                         </select>
                       </td>
@@ -756,6 +777,9 @@ export function QuoteEditor({
                   <strong>{formatMoney(line.totalHtCents)}</strong>
                 </div>
               ))}
+              {calculatedLines.length > 5 ? (
+                <p className="pt-1 text-xs text-muted">+ {calculatedLines.length - 5} autre{calculatedLines.length - 5 > 1 ? "s" : ""}</p>
+              ) : null}
             </div>
             <div className="mt-4 flex justify-between text-base">
               <span>Total TTC</span>

@@ -274,7 +274,7 @@ export default async function QuoteDetailPage({
                         <td className="px-4 py-3 text-right tabular-nums">
                           {Number(line.quantity).toLocaleString("fr-FR")}
                         </td>
-                        <td className="px-4 py-3 text-muted">{line.unit}</td>
+                        <td className="px-4 py-3 text-muted">{({ UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait" } as Record<string, string>)[line.unit] ?? line.unit}</td>
                         <td className="px-4 py-3 text-right tabular-nums">
                           {formatMoney(line.unitPriceHtCents)}
                         </td>

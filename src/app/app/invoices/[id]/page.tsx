@@ -116,7 +116,7 @@ export default async function InvoiceDetailPage({
                         {line.description ? <p className="text-muted">{line.description}</p> : null}
                       </td>
                       <td className="px-4 py-3 text-right">{Number(line.quantity).toLocaleString("fr-FR")}</td>
-                      <td className="px-4 py-3">{line.unit}</td>
+                      <td className="px-4 py-3">{({ UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait" } as Record<string, string>)[line.unit] ?? line.unit}</td>
                       <td className="px-4 py-3 text-right">{formatMoney(line.unitPriceHtCents)}</td>
                       <td className="px-4 py-3 text-right">
                         {vatMode === "FRANCHISE_BASE" ? "0 %" : `${Number(line.vatRate).toLocaleString("fr-FR")} %`}
@@ -137,9 +137,14 @@ export default async function InvoiceDetailPage({
               <div className="flex justify-between border-b border-border px-4 py-3"><span>TVA</span><strong>{formatMoney(invoice.totalVatCents)}</strong></div>
               <div className="flex justify-between bg-primary px-4 py-3 text-lg font-bold text-white"><span>Total TTC</span><strong>{formatMoney(invoice.totalTtcCents)}</strong></div>
               {invoice.amountPaidCents > 0 && invoice.status !== "PAID" && (
-                <div className="flex justify-between border-t border-border px-4 py-3 text-green-700">
-                  <span>Déjà encaissé</span><strong>{formatMoney(invoice.amountPaidCents)}</strong>
-                </div>
+                <>
+                  <div className="flex justify-between border-t border-border px-4 py-3 text-green-700">
+                    <span>Déjà encaissé</span><strong>{formatMoney(invoice.amountPaidCents)}</strong>
+                  </div>
+                  <div className="flex justify-between border-t border-border px-4 py-3 font-bold text-primary">
+                    <span>Reste dû</span><strong>{formatMoney(invoice.totalTtcCents - invoice.amountPaidCents)}</strong>
+                  </div>
+                </>
               )}
             </div>
 
