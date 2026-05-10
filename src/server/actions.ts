@@ -1089,19 +1089,21 @@ export async function convertQuoteToInvoiceAction(quoteId: string) {
       totalTtcCents: quote.totalTtcCents,
       notesToClient: quote.notesToClient,
       lines: {
-        create: quote.lines.map((line) => ({
-          quoteLineId: line.id,
-          position: line.position,
-          title: line.title,
-          description: line.description,
-          quantity: line.quantity,
-          unit: line.unit,
-          unitPriceHtCents: line.unitPriceHtCents,
-          vatRate: line.vatRate,
-          totalHtCents: line.totalHtCents,
-          totalVatCents: line.totalVatCents,
-          totalTtcCents: line.totalTtcCents,
-        })),
+        create: quote.lines
+          .filter((line) => line.type !== "SECTION")
+          .map((line, i) => ({
+            quoteLineId: line.id,
+            position: i,
+            title: line.title,
+            description: line.description,
+            quantity: line.quantity,
+            unit: line.unit,
+            unitPriceHtCents: line.unitPriceHtCents,
+            vatRate: line.vatRate,
+            totalHtCents: line.totalHtCents,
+            totalVatCents: line.totalVatCents,
+            totalTtcCents: line.totalTtcCents,
+          })),
       },
     },
   });
