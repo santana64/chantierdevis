@@ -263,29 +263,40 @@ export default async function QuoteDetailPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {quote.lines.map((line) => (
-                      <tr key={line.id} className="bg-white align-top">
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-foreground">{line.title}</p>
-                          {line.description ? (
-                            <p className="mt-0.5 text-xs text-muted">{line.description}</p>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums">
-                          {Number(line.quantity).toLocaleString("fr-FR")}
-                        </td>
-                        <td className="px-4 py-3 text-muted">{({ UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait" } as Record<string, string>)[line.unit] ?? line.unit}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">
-                          {formatMoney(line.unitPriceHtCents)}
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-muted">
-                          {Number(line.vatRate).toLocaleString("fr-FR")} %
-                        </td>
-                        <td className="px-4 py-3 text-right font-bold tabular-nums">
-                          {formatMoney(line.totalHtCents)}
-                        </td>
-                      </tr>
-                    ))}
+                    {quote.lines.map((line) => {
+                      if (line.type === "SECTION") {
+                        return (
+                          <tr key={line.id} className="border-t-2 border-slate-300 bg-slate-50">
+                            <td colSpan={6} className="px-4 py-2 font-semibold text-slate-700 text-sm uppercase tracking-wide">
+                              {line.title}
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return (
+                        <tr key={line.id} className="bg-white align-top">
+                          <td className="px-4 py-3">
+                            <p className="font-semibold text-foreground">{line.title}</p>
+                            {line.description ? (
+                              <p className="mt-0.5 text-xs text-muted">{line.description}</p>
+                            ) : null}
+                          </td>
+                          <td className="px-4 py-3 text-right tabular-nums">
+                            {Number(line.quantity).toLocaleString("fr-FR")}
+                          </td>
+                          <td className="px-4 py-3 text-muted">{({ UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait" } as Record<string, string>)[line.unit] ?? line.unit}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">
+                            {formatMoney(line.unitPriceHtCents)}
+                          </td>
+                          <td className="px-4 py-3 text-right tabular-nums text-muted">
+                            {Number(line.vatRate).toLocaleString("fr-FR")} %
+                          </td>
+                          <td className="px-4 py-3 text-right font-bold tabular-nums">
+                            {formatMoney(line.totalHtCents)}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

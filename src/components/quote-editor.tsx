@@ -1,7 +1,7 @@
 "use client";
 
 import { addDays } from "date-fns";
-import { ArrowDown, ArrowUp, LibraryBig, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, LibraryBig, Minus, Plus, Save, Sparkles, Trash2 } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -520,6 +520,10 @@ export function QuoteEditor({
                 <Button type="button" variant="secondary" onClick={() => setLines((current) => [...current, emptyLine(company.vatMode)])}>
                   <Plus aria-hidden className="h-4 w-4" />
                   Ligne
+                </Button>
+                <Button type="button" variant="secondary" onClick={() => setLines((current) => [...current, { type: "SECTION", title: "", description: "", quantity: 1, unit: "PACKAGE", unitPriceHtCents: 0, unitCostCents: 0, vatRate: 0 }])}>
+                  <Minus aria-hidden className="h-4 w-4" />
+                  Section
                 </Button>
               </div>
             }
