@@ -208,16 +208,17 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
         </thead>
         <tbody>
           ${invoice.lines
-            .map(
-              (line) => `<tr>
+            .map((line) => {
+              const unitLabel: Record<string, string> = { UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait" };
+              return `<tr>
                 <td><strong>${escapeHtml(line.title)}</strong>${line.description ? `<br /><span class="muted">${paragraph(line.description)}</span>` : ""}</td>
                 <td class="number">${Number(line.quantity).toLocaleString("fr-FR")}</td>
-                <td>${escapeHtml(line.unit)}</td>
+                <td>${escapeHtml(unitLabel[line.unit] ?? line.unit)}</td>
                 <td class="number">${formatMoney(line.unitPriceHtCents)}</td>
                 <td class="number">${vatMode === "FRANCHISE_BASE" ? "0 %" : `${Number(line.vatRate).toLocaleString("fr-FR")} %`}</td>
                 <td class="number"><strong>${formatMoney(line.totalHtCents)}</strong></td>
-              </tr>`,
-            )
+              </tr>`;
+            })
             .join("")}
         </tbody>
       </table>

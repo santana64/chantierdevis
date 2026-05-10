@@ -151,6 +151,16 @@ export function generateQuoteDocumentHtml(input: QuoteDocumentInput) {
       padding: 10px;
       vertical-align: top;
     }
+    .section-row td {
+      background: #f0f4f8;
+      border-top: 2px solid #cbd5e1;
+      border-bottom: 1px solid #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1f3b57;
+    }
     .number { text-align: right; white-space: nowrap; }
     .totals {
       margin-left: auto;
@@ -261,18 +271,19 @@ export function generateQuoteDocumentHtml(input: QuoteDocumentInput) {
       </thead>
       <tbody>
         ${lines
-          .map((line) =>
-            line.type === "SECTION"
-              ? `<tr><td colspan="6"><strong>${escapeHtml(line.title)}</strong></td></tr>`
+          .map((line) => {
+            const unitLabel: Record<string, string> = { UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait" };
+            return line.type === "SECTION"
+              ? `<tr class="section-row"><td colspan="6">${escapeHtml(line.title)}</td></tr>`
               : `<tr>
                   <td><strong>${escapeHtml(line.title)}</strong>${line.description ? `<br /><span class="muted">${paragraph(line.description)}</span>` : ""}</td>
                   <td class="number">${line.quantity.toLocaleString("fr-FR")}</td>
-                  <td>${escapeHtml(line.unit)}</td>
+                  <td>${escapeHtml(unitLabel[line.unit] ?? line.unit)}</td>
                   <td class="number">${formatMoney(line.unitPriceHtCents)}</td>
                   <td class="number">${franchise ? "0 %" : `${line.vatRate.toLocaleString("fr-FR")} %`}</td>
                   <td class="number">${formatMoney(line.totalHtCents)}</td>
-                </tr>`,
-          )
+                </tr>`;
+          })
           .join("")}
       </tbody>
     </table>
