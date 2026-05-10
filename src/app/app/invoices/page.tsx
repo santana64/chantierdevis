@@ -1,4 +1,4 @@
-import { Bell, Download, Printer } from "lucide-react";
+import { Bell, Download, Printer, Search } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/app-shell";
 import { InvoiceStatusBadge } from "@/components/badges";
@@ -33,6 +33,7 @@ export default async function InvoicesPage({
   const activeStatus = sp(params, "status") || "ALL";
   const reminded = sp(params, "reminded");
   const clientFilter = sp(params, "client") || null;
+  const q = sp(params, "q") || null;
 
   const { user } = await getAppContext();
   const now = new Date();
@@ -49,6 +50,13 @@ export default async function InvoicesPage({
         userId: user.id,
         ...(activeStatus !== "ALL" ? { status: activeStatus as never } : {}),
         ...(clientFilter ? { clientId: clientFilter } : {}),
+        ...(q ? {
+          OR: [
+            { invoiceNumber: { contains: q, mode: "insensitive" as const } },
+            { client: { name: { contains: q, mode: "insensitive" as const } } },
+            { client: { companyName: { contains: q, mode: "insensitive" as const } } },
+          ],
+        } : {}),
       },
       include: {
         client: { select: { id: true, name: true, companyName: true, email: true } },
@@ -112,24 +120,39 @@ export default async function InvoicesPage({
         </div>
       </div>
 
-      {/* Status tabs */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {STATUS_TABS.map((tab) => {
-          const isActive = tab.value === activeStatus;
-          return (
-            <Link
-              key={tab.value}
-              href={tab.value === "ALL" ? "/app/invoices" : `/app/invoices?status=${tab.value}`}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${
-                isActive
-                  ? "border-primary bg-primary text-white"
-                  : "border-border bg-white text-foreground hover:border-[#c0c9d8]"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
+      {/* Status tabs + search */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2">
+          {STATUS_TABS.map((tab) => {
+            const isActive = tab.value === activeStatus;
+            const href = tab.value === "ALL"
+              ? (q ? `/app/invoices?q=${encodeURIComponent(q)}` : "/app/invoices")
+              : (q ? `/app/invoices?status=${tab.value}&q=${encodeURIComponent(q)}` : `/app/invoices?status=${tab.value}`);
+            return (
+              <Link
+                key={tab.value}
+                href={href}
+                className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${
+                  isActive
+                    ? "border-primary bg-primary text-white"
+                    : "border-border bg-white text-foreground hover:border-[#c0c9d8]"
+                }`}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
+        </div>
+        <form className="relative shrink-0">
+          {activeStatus !== "ALL" && <input type="hidden" name="status" value={activeStatus} />}
+          <Search aria-hidden className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <input
+            name="q"
+            defaultValue={q ?? ""}
+            placeholder="N° facture, client…"
+            className="h-9 w-full rounded-lg border border-border bg-white pl-9 pr-3 text-sm placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:w-52"
+          />
+        </form>
       </div>
 
       <Card>
