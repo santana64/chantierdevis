@@ -106,6 +106,9 @@ export default async function ClientsPage({
                 (sum, quote) => sum + quote.totalTtcCents,
                 0,
               );
+              const totalInvoiced = client.invoices
+                .filter((inv) => inv.status !== "CANCELLED")
+                .reduce((sum, inv) => sum + inv.totalTtcCents, 0);
               const lastQuote = client.quotes[0];
               return (
                 <details key={client.id} className="group">
@@ -130,7 +133,7 @@ export default async function ClientsPage({
                           {client.phone || "Téléphone non renseigné"}
                         </p>
                       </div>
-                      <div className="grid grid-cols-4 gap-2 text-center lg:min-w-[440px]">
+                      <div className="grid grid-cols-5 gap-2 text-center lg:min-w-[540px]">
                         {[
                           { label: "Devis", value: `${client.quotes.length}` },
                           { label: "Acceptés", value: `${acceptedQuotes.length}` },
@@ -139,15 +142,16 @@ export default async function ClientsPage({
                             value: lastQuote ? formatShortFrenchDate(lastQuote.issueDate) : "—",
                           },
                           { label: "CA accepté", value: formatMoney(totalAccepted) },
+                          { label: "Facturé", value: formatMoney(totalInvoiced), highlight: totalInvoiced > 0 },
                         ].map((stat) => (
                           <div
                             key={stat.label}
-                            className="rounded-xl border border-border bg-white p-3"
+                            className={`rounded-xl border p-3 ${"highlight" in stat && stat.highlight ? "border-green-200 bg-green-50" : "border-border bg-white"}`}
                           >
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
                               {stat.label}
                             </p>
-                            <p className="mt-1 text-sm font-bold tabular-nums text-foreground">
+                            <p className={`mt-1 text-sm font-bold tabular-nums ${"highlight" in stat && stat.highlight ? "text-green-700" : "text-foreground"}`}>
                               {stat.value}
                             </p>
                           </div>
@@ -252,6 +256,12 @@ export default async function ClientsPage({
                         className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-semibold text-foreground transition hover:bg-white"
                       >
                         Voir les devis
+                      </Link>
+                      <Link
+                        href={`/app/invoices?client=${client.id}`}
+                        className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-semibold text-foreground transition hover:bg-white"
+                      >
+                        Voir les factures
                       </Link>
                     </div>
                   </form>

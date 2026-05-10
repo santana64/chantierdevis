@@ -213,9 +213,8 @@ export async function getClientsData() {
   const clients = await prisma.client.findMany({
     where: { userId: user.id },
     include: {
-      quotes: {
-        orderBy: { updatedAt: "desc" },
-      },
+      quotes: { orderBy: { updatedAt: "desc" } },
+      invoices: { select: { totalTtcCents: true, status: true } },
     },
     orderBy: { updatedAt: "desc" },
   });

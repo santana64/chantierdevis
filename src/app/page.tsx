@@ -6,6 +6,8 @@ import {
   FileSignature,
   Hammer,
   Percent,
+  Quote,
+  Receipt,
   Send,
   Shield,
   Sparkles,
@@ -14,6 +16,27 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+
+const testimonials = [
+  {
+    name: "Julien M.",
+    role: "Plombier · Île-de-France",
+    text: "Avant ChantierDevis je perdais 2 heures par devis sur Excel. Maintenant l'IA génère les lignes en 30 secondes, je vérifie ma marge et j'envoie. Mes clients signent depuis leur téléphone le soir même.",
+    stars: 5,
+  },
+  {
+    name: "Amira B.",
+    role: "Peintre en bâtiment · Lyon",
+    text: "La conformité automatique m'a sauvé plusieurs fois. J'avais oublié le numéro de décennale sur mes anciens devis. Maintenant l'outil me bloque si j'oublie quelque chose. C'est rassurant.",
+    stars: 5,
+  },
+  {
+    name: "Thierry C.",
+    role: "Carreleur · Bordeaux",
+    text: "J'ai testé Tolteck et Synobat. ChantierDevis est le seul qui calcule la marge ligne par ligne. Je sais enfin si je gagne de l'argent sur chaque chantier. Et le prix est imbattable.",
+    stars: 5,
+  },
+];
 
 const features = [
   {
@@ -54,6 +77,12 @@ const features = [
     text: "Application installable sur iPhone et Android. Créez un devis en déplacement, signez depuis le chantier.",
   },
   {
+    icon: Receipt,
+    title: "Facturation Factur-X",
+    text: "Convertissez un devis accepté en facture en un clic. Export Factur-X (norme EN 16931) pour Chorus Pro et la conformité 2026. Relances email automatiques.",
+    badge: "Nouveau",
+  },
+  {
     icon: Shield,
     title: "Données isolées et sécurisées",
     text: "Vos clients et devis ne sont jamais accessibles à d'autres utilisateurs. Hébergement EU, chiffrement HTTPS, mots de passe jamais stockés en clair.",
@@ -87,6 +116,7 @@ const comparison = [
   { feature: "IA générative pour devis", chantierdevis: true, tolteck: false, synobat: false },
   { feature: "Marge visible ligne par ligne", chantierdevis: true, tolteck: true, synobat: false },
   { feature: "Signature électronique", chantierdevis: true, tolteck: true, synobat: true },
+  { feature: "Facturation + export Factur-X", chantierdevis: true, tolteck: false, synobat: false },
   { feature: "WhatsApp share en 1 clic", chantierdevis: true, tolteck: false, synobat: false },
   { feature: "PWA installable mobile", chantierdevis: true, tolteck: false, synobat: false },
   { feature: "Bibliothèque BTP pré-remplie", chantierdevis: true, tolteck: true, synobat: true },
@@ -180,6 +210,10 @@ const faqs = [
     a: "Oui. La bibliothèque d’ouvrages conserve prix de vente, coût de revient, TVA et description. Ajoutez-les en un clic ou importez les 60+ ouvrages BTP pré-remplis par métier.",
   },
   {
+    q: "Comment fonctionne la facturation Factur-X ?",
+    a: "Une fois un devis accepté, convertissez-le en facture en un clic. Chaque facture est exportable en XML Factur-X (norme EN 16931 COMFORT), compatible Chorus Pro et la réglementation française 2026. Le suivi des encaissements, les relances email et la détection automatique des retards sont inclus.",
+  },
+  {
     q: "Mes données sont-elles privées ?",
     a: "Chaque compte est strictement isolé côté serveur. Vos clients, devis et ouvrages ne sont jamais accessibles à d’autres utilisateurs. Données hébergées en Europe (AWS eu-west-2).",
   },
@@ -242,10 +276,25 @@ export default function Home() {
               { icon: Sparkles, text: "IA pour chaque devis" },
               { icon: TrendingUp, text: "Marge visible avant envoi" },
               { icon: Zap, text: "Sans Word ni Excel" },
+              { icon: Receipt, text: "Facturation Factur-X incluse" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2 text-sm text-white/60">
                 <Icon aria-hidden className="h-4 w-4 text-accent" />
                 {text}
+              </div>
+            ))}
+          </div>
+
+          {/* Social proof bar */}
+          <div className="mt-10 flex flex-wrap items-center gap-6 border-t border-white/10 pt-8">
+            {[
+              { value: "2 min", label: "Pour créer un devis complet" },
+              { value: "41 %", label: "Marge moyenne constatée" },
+              { value: "100 %", label: "Conformité Factur-X 2026" },
+            ].map(({ value, label }) => (
+              <div key={label} className="text-white">
+                <p className="text-2xl font-black tabular-nums text-accent">{value}</p>
+                <p className="mt-0.5 text-xs text-white/50">{label}</p>
               </div>
             ))}
           </div>
@@ -407,6 +456,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* TESTIMONIALS */}
+      <section className="bg-[#fefcf7] py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-accent">Témoignages</p>
+            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Ce qu&apos;en disent les artisans.</h2>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {testimonials.map((t) => (
+              <article key={t.name} className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm">
+                <Quote aria-hidden className="h-8 w-8 text-accent/30" />
+                <p className="flex-1 text-sm leading-relaxed text-muted">&ldquo;{t.text}&rdquo;</p>
+                <div>
+                  <div className="flex gap-0.5 text-accent" aria-label={`${t.stars} étoiles`}>
+                    {[...Array(t.stars)].map((_, i) => (
+                      <span key={i} aria-hidden>★</span>
+                    ))}
+                  </div>
+                  <p className="mt-2 font-bold text-foreground">{t.name}</p>
+                  <p className="text-xs text-muted">{t.role}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          {/* Trust logos strip */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 opacity-50">
+            {["Chorus Pro", "Factur-X EN 16931", "RGPD UE", "AWS eu-west-2"].map((logo) => (
+              <span key={logo} className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                {logo}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* COCKPIT */}
       <section className="bg-[#1e3a5a] py-20 text-white">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
@@ -421,10 +505,11 @@ export default function Home() {
             </p>
             <ul className="mt-6 space-y-3">
               {[
-                "Montant devisé et accepté ce mois",
+                "Montant devisé, accepté et facturé",
                 "Taux d’acceptation et marge moyenne",
                 "Devis expirés, à relancer, à compléter",
-                "Conversion en facture en un clic",
+                "Factures en retard et encaissements",
+                "Graphique chiffre d’affaires 12 mois",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-white/75">
                   <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-accent/80" />

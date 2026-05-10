@@ -2,8 +2,28 @@ import { Building2, Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { logoutAction, resendVerificationEmailAction } from "@/server/auth-actions";
-import type { User } from "@prisma/client";
+import type { SubscriptionPlan, User } from "@prisma/client";
 import { MobileNavLinks, SidebarNavLinks } from "./nav-links";
+
+const planLabels: Record<SubscriptionPlan, string> = {
+  FREE: "Gratuit",
+  SOLO: "Solo",
+  PRO: "Pro",
+  BUSINESS: "Business",
+};
+const planColors: Record<SubscriptionPlan, string> = {
+  FREE: "bg-white/10 text-white/50",
+  SOLO: "bg-accent/20 text-accent",
+  PRO: "bg-green-500/20 text-green-300",
+  BUSINESS: "bg-purple-500/20 text-purple-300",
+};
+function PlanBadge({ plan }: { plan: SubscriptionPlan }) {
+  return (
+    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${planColors[plan]}`}>
+      {planLabels[plan]}
+    </span>
+  );
+}
 
 export function AppShell({ children, user }: { children: ReactNode; user: User }) {
   return (
@@ -29,11 +49,14 @@ export function AppShell({ children, user }: { children: ReactNode; user: User }
         {/* Nav */}
         <SidebarNavLinks />
 
-        {/* User + logout */}
+        {/* User + plan + logout */}
         <div className="shrink-0 border-t border-[rgba(255,255,255,0.09)] p-4">
-          <p className="truncate text-sm font-semibold text-white">
-            {user.name}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
+              {user.name}
+            </p>
+            <PlanBadge plan={user.plan} />
+          </div>
           <p className="mt-0.5 truncate text-xs text-white/50">{user.email}</p>
           <form action={logoutAction} className="mt-3">
             <button

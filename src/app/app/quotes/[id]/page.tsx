@@ -27,6 +27,7 @@ import {
   changeQuoteStatusAction,
   convertQuoteToInvoiceAction,
   duplicateQuoteAction,
+  extendQuoteValidityAction,
   generateQuoteDocumentAction,
   generateSignatureLinkAction,
   markFollowUpDoneAction,
@@ -108,6 +109,11 @@ export default async function QuoteDetailPage({
           <InfoNotice>{emailMessage}</InfoNotice>
         </div>
       ) : null}
+      {query.extended ? (
+        <div className="mb-5">
+          <SuccessNotice>Validité prolongée de 30 jours. Le devis est à nouveau actif.</SuccessNotice>
+        </div>
+      ) : null}
 
       {/* Command bar */}
       <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -175,6 +181,14 @@ export default async function QuoteDetailPage({
             <input type="hidden" name="returnTo" value={`/app/quotes/${quote.id}`} />
             <Button size="sm" variant="secondary" type="submit">Expiré</Button>
           </form>
+          {(quote.status === "EXPIRED" || quote.status === "SENT") ? (
+            <form action={extendQuoteValidityAction.bind(null, quote.id)}>
+              <Button size="sm" variant="secondary" type="submit">
+                <CalendarClock aria-hidden className="h-3.5 w-3.5" />
+                Prolonger +30j
+              </Button>
+            </form>
+          ) : null}
 
           <div className="h-8 w-px bg-border" aria-hidden />
 
