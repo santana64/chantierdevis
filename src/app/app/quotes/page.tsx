@@ -169,9 +169,15 @@ export default async function QuotesPage({
           </div>
         ) : (
           <>
-            <div className="border-b border-border px-6 py-3">
+            <div className="flex items-center justify-between border-b border-border px-6 py-3">
               <p className="text-sm text-muted">
                 <span className="font-semibold text-foreground">{quotes.length}</span> devis
+              </p>
+              <p className="text-sm text-muted">
+                Total filtré :{" "}
+                <span className="font-semibold tabular-nums text-foreground">
+                  {formatMoney(quotes.reduce((s, q) => s + q.totalTtcCents, 0))}
+                </span>
               </p>
             </div>
             <div className="divide-y divide-border md:hidden">
@@ -268,8 +274,19 @@ export default async function QuotesPage({
                       <td className="px-6 py-4">
                         <ComplianceBadge status={quote.complianceStatus} />
                       </td>
-                      <td className="px-6 py-4 tabular-nums text-muted">
-                        {formatShortFrenchDate(quote.validUntil)}
+                      <td className="px-6 py-4 tabular-nums">
+                        {(() => {
+                          const now = new Date();
+                          const daysLeft = Math.ceil((new Date(quote.validUntil).getTime() - now.getTime()) / 86_400_000);
+                          const expired = daysLeft < 0;
+                          const expiringSoon = !expired && daysLeft <= 3 && quote.status === "SENT";
+                          return (
+                            <span className={expired ? "text-red-600 font-medium" : expiringSoon ? "text-amber-600 font-medium" : "text-muted"}>
+                              {formatShortFrenchDate(quote.validUntil)}
+                              {expiringSoon ? ` (${daysLeft}j)` : ""}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 text-right font-bold tabular-nums">
                         {formatMoney(quote.totalTtcCents)}
