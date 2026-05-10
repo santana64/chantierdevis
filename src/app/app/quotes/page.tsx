@@ -59,7 +59,18 @@ export default async function QuotesPage({
       <PageHeader
         title="Devis"
         description="Retrouvez vos devis, relancez les clients et préparez les documents à signer."
-        action={<LinkButton href="/app/quotes/new">Créer un devis</LinkButton>}
+        action={
+          <div className="flex items-center gap-2">
+            <a
+              href="/app/quotes/export"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-semibold text-foreground transition hover:bg-white hover:border-[#c0c9d8]"
+            >
+              <FileDown aria-hidden className="h-4 w-4" />
+              Export CSV
+            </a>
+            <LinkButton href="/app/quotes/new">Créer un devis</LinkButton>
+          </div>
+        }
       />
 
       {/* Filter bar */}

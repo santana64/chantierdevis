@@ -83,6 +83,15 @@ export default async function InvoicesPage({
       <PageHeader
         title="Factures"
         description="Suivi des encaissements, relances et exports Factur-X."
+        action={
+          <a
+            href="/app/invoices/export"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-semibold text-foreground transition hover:bg-white hover:border-[#c0c9d8]"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
+        }
       />
 
       {reminded ? (
