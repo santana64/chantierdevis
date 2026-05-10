@@ -128,14 +128,14 @@ export default async function InvoiceDetailPage({
               </table>
             </div>
 
-            {vatMode === "FRANCHISE_BASE" && (
+            {vatMode === "FRANCHISE_BASE" ? (
               <p className="mt-3 text-sm text-muted">TVA non applicable, art. 293 B du CGI</p>
-            )}
+            ) : null}
 
             <div className="ml-auto mt-5 w-full max-w-sm rounded-lg border border-border bg-white">
               <div className="flex justify-between border-b border-border px-4 py-3"><span>Total HT</span><strong>{formatMoney(invoice.subtotalHtCents)}</strong></div>
-              <div className="flex justify-between border-b border-border px-4 py-3"><span>TVA</span><strong>{formatMoney(invoice.totalVatCents)}</strong></div>
-              <div className="flex justify-between bg-primary px-4 py-3 text-lg font-bold text-white"><span>Total TTC</span><strong>{formatMoney(invoice.totalTtcCents)}</strong></div>
+              <div className="flex justify-between border-b border-border px-4 py-3"><span>TVA</span><strong>{formatMoney(vatMode === "FRANCHISE_BASE" ? 0 : invoice.totalVatCents)}</strong></div>
+              <div className="flex justify-between bg-primary px-4 py-3 text-lg font-bold text-white"><span>Total TTC</span><strong>{formatMoney(vatMode === "FRANCHISE_BASE" ? invoice.subtotalHtCents : invoice.totalTtcCents)}</strong></div>
               {invoice.amountPaidCents > 0 && invoice.status !== "PAID" && (
                 <>
                   <div className="flex justify-between border-t border-border px-4 py-3 text-green-700">

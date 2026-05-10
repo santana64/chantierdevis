@@ -293,7 +293,7 @@ export default async function QuoteDetailPage({
                             {formatMoney(line.unitPriceHtCents)}
                           </td>
                           <td className="px-4 py-3 text-right tabular-nums text-muted">
-                            {Number(line.vatRate).toLocaleString("fr-FR")} %
+                            {vatMode === "FRANCHISE_BASE" ? "0" : Number(line.vatRate).toLocaleString("fr-FR")} %
                           </td>
                           <td className="px-4 py-3 text-right font-bold tabular-nums">
                             {formatMoney(line.totalHtCents)}

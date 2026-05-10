@@ -30,6 +30,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     ? `${company.address}, ${company.postalCode} ${company.city}`
     : "Profil entreprise à compléter";
   const vatMode = company?.vatMode ?? "STANDARD";
+  const displayVat = vatMode === "FRANCHISE_BASE" ? 0 : invoice.totalVatCents;
+  const displayTtc = vatMode === "FRANCHISE_BASE" ? invoice.subtotalHtCents : invoice.totalTtcCents;
   const html = `<!doctype html>
 <html lang="fr">
 <head>
@@ -228,12 +230,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
     <section class="totals" aria-label="Totaux facture">
       <div class="totals-row"><span>Total HT</span><strong>${formatMoney(invoice.subtotalHtCents)}</strong></div>
-      <div class="totals-row"><span>Total TVA</span><strong>${formatMoney(invoice.totalVatCents)}</strong></div>
+      <div class="totals-row"><span>Total TVA</span><strong>${formatMoney(displayVat)}</strong></div>
       ${invoice.amountPaidCents > 0 && invoice.status !== "PAID" ? `
-      <div class="totals-row"><span>Total TTC</span><strong>${formatMoney(invoice.totalTtcCents)}</strong></div>
+      <div class="totals-row"><span>Total TTC</span><strong>${formatMoney(displayTtc)}</strong></div>
       <div class="totals-row" style="color: #16a34a"><span>Déjà encaissé</span><strong>${formatMoney(invoice.amountPaidCents)}</strong></div>
-      <div class="totals-row totals-final"><span>Reste dû</span><strong>${formatMoney(invoice.totalTtcCents - invoice.amountPaidCents)}</strong></div>
-      ` : `<div class="totals-row totals-final"><span>Total TTC</span><strong>${formatMoney(invoice.totalTtcCents)}</strong></div>`}
+      <div class="totals-row totals-final"><span>Reste dû</span><strong>${formatMoney(displayTtc - invoice.amountPaidCents)}</strong></div>
+      ` : `<div class="totals-row totals-final"><span>Total TTC</span><strong>${formatMoney(displayTtc)}</strong></div>`}
     </section>
 
     <section class="box" style="margin-top: 24px;">
