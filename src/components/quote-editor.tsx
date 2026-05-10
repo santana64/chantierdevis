@@ -529,6 +529,11 @@ export function QuoteEditor({
             }
           />
           <div className="border-b border-border p-5 space-y-3">
+            {workItems.length === 0 ? (
+              <div className="rounded-lg border border-border bg-white px-4 py-3 text-sm text-muted">
+                Bibliothèque vide — <a href="/app/items" className="font-semibold text-primary underline underline-offset-4" target="_blank" rel="noopener noreferrer">créez vos ouvrages</a> pour les réutiliser ici.
+              </div>
+            ) : null}
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <select className={inputClass} value={selectedItemId} onChange={(event) => setSelectedItemId(event.target.value)}>
                 {Object.entries(

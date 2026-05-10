@@ -1,7 +1,7 @@
 import { Search, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/app-shell";
-import { Button, Card, CardHeader, EmptyState, Field, inputClass } from "@/components/ui";
+import { Button, Card, CardHeader, EmptyState, Field, SuccessNotice, inputClass } from "@/components/ui";
 import { formatMoney, formatShortFrenchDate } from "@/domain/quotes";
 import { createClientAction, deleteClientAction, updateClientAction } from "@/server/actions";
 import { getClientsData } from "@/server/queries";
@@ -15,6 +15,8 @@ export default async function ClientsPage({
 }) {
   const params = await searchParams;
   const q = Array.isArray(params.q) ? params.q[0] : params.q;
+  const saved = Array.isArray(params.saved) ? params.saved[0] : params.saved;
+  const deleted = Array.isArray(params.deleted) ? params.deleted[0] : params.deleted;
   const { clients } = await getClientsData(q);
 
   return (
@@ -35,6 +37,16 @@ export default async function ClientsPage({
         }
       />
 
+      {saved ? (
+        <div className="mb-5">
+          <SuccessNotice>Client enregistré avec succès.</SuccessNotice>
+        </div>
+      ) : null}
+      {deleted ? (
+        <div className="mb-5">
+          <SuccessNotice>Client supprimé.</SuccessNotice>
+        </div>
+      ) : null}
       {q ? (
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm text-blue-800">
           {clients.length} résultat{clients.length !== 1 ? "s" : ""} pour «{q}» ·{" "}

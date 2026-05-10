@@ -52,6 +52,9 @@ export default async function ItemsPage({
   const params = await searchParams;
   const filters = { q: value(params, "q"), trade: value(params, "trade") };
   const imported = value(params, "imported");
+  const saved = value(params, "saved");
+  const duplicated = value(params, "duplicated");
+  const deleted = value(params, "deleted");
   const { workItems } = await getWorkItemsData(filters);
 
   return (
@@ -62,6 +65,21 @@ export default async function ItemsPage({
         action={<LinkButton href="/app/quotes/new">Utiliser dans un devis</LinkButton>}
       />
 
+      {saved ? (
+        <div className="mb-6">
+          <SuccessNotice>Ouvrage enregistré avec succès.</SuccessNotice>
+        </div>
+      ) : null}
+      {duplicated ? (
+        <div className="mb-6">
+          <SuccessNotice>Ouvrage dupliqué. Modifiez-le selon vos besoins.</SuccessNotice>
+        </div>
+      ) : null}
+      {deleted ? (
+        <div className="mb-6">
+          <SuccessNotice>Ouvrage supprimé.</SuccessNotice>
+        </div>
+      ) : null}
       {params.error === "item-used" ? (
         <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           Cet ouvrage est déjà utilisé dans un devis. Dupliquez-le ou modifiez-le au lieu de le supprimer.
