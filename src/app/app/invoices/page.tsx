@@ -202,7 +202,47 @@ export default async function InvoicesPage({
                 </span>
               </span>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Mobile card view */}
+            <div className="divide-y divide-border md:hidden">
+              {invoices.map((invoice) => {
+                const isOverdue = invoice.status === "OVERDUE";
+                return (
+                  <article key={invoice.id} className={`p-5 ${isOverdue ? "bg-red-50/30" : "bg-card"}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <Link href={`/app/invoices/${invoice.id}`} className="font-bold text-primary hover:underline">
+                          {invoice.invoiceNumber}
+                        </Link>
+                        <p className="mt-0.5 text-sm font-medium">{invoice.client.companyName || invoice.client.name}</p>
+                        <p className="mt-0.5 text-xs text-muted">
+                          Devis{" "}<Link href={`/app/quotes/${invoice.quote.id}`} className="text-primary hover:underline">{invoice.quote.quoteNumber}</Link>
+                          {" · "}échéance{" "}<span className={isOverdue ? "font-semibold text-red-700" : ""}>{formatShortFrenchDate(invoice.dueDate)}</span>
+                        </p>
+                      </div>
+                      <InvoiceStatusBadge status={invoice.status} />
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <p className="text-lg font-bold tabular-nums">{formatMoney(invoice.totalTtcCents)}</p>
+                      <div className="flex gap-1.5">
+                        <LinkButton href={`/app/invoices/${invoice.id}`} variant="secondary" size="sm">Voir</LinkButton>
+                        {(invoice.status === "ISSUED" || invoice.status === "OVERDUE") && invoice.client.email ? (
+                          <form action={sendInvoiceReminderAction.bind(null, invoice.id)}>
+                            <button type="submit" className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-semibold shadow-sm transition ${isOverdue ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100" : "border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"}`}>
+                              <Bell className="h-3.5 w-3.5" />
+                              Relancer
+                            </button>
+                          </form>
+                        ) : null}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[920px] text-sm">
                 <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <tr>

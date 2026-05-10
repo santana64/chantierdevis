@@ -531,10 +531,19 @@ export function QuoteEditor({
           <div className="border-b border-border p-5 space-y-3">
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <select className={inputClass} value={selectedItemId} onChange={(event) => setSelectedItemId(event.target.value)}>
-                {workItems.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {tradeLabels[item.trade]} - {item.title}
-                  </option>
+                {Object.entries(
+                  workItems.reduce<Record<string, EditorWorkItem[]>>((acc, item) => {
+                    (acc[item.trade] ??= []).push(item);
+                    return acc;
+                  }, {}),
+                ).map(([trade, items]) => (
+                  <optgroup key={trade} label={tradeLabels[trade as Trade]}>
+                    {items.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.title} — {formatMoney(item.defaultUnitPriceCents)} HT
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <Button type="button" variant="secondary" onClick={addWorkItem} disabled={workItems.length === 0}>

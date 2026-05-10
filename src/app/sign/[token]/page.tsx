@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatMoney, formatShortFrenchDate } from "@/domain/quotes";
+import { calculateDeposit, formatMoney, formatShortFrenchDate } from "@/domain/quotes";
 import { SignaturePad } from "./SignaturePad";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +47,7 @@ export default async function SignPage({
   const clientName = quote.client.companyName || quote.client.name;
   const isSigned = !!quote.clientSignedAt;
   const isExpired = quote.validUntil < new Date();
+  const depositAmount = quote.depositAmountCents ?? calculateDeposit(quote.totalTtcCents, Number(quote.depositPercent));
   const unitLabels: Record<string, string> = {
     UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait",
   };
@@ -130,10 +131,10 @@ export default async function SignPage({
               <span>Total TTC</span>
               <span className="tabular-nums">{formatMoney(quote.totalTtcCents)}</span>
             </div>
-            {quote.depositAmountCents ? (
+            {depositAmount > 0 ? (
               <div className="flex justify-between pt-1 text-slate-500">
-                <span>Acompte demandé ({Number(quote.depositPercent)} %)</span>
-                <span className="tabular-nums">{formatMoney(quote.depositAmountCents)}</span>
+                <span>Acompte demandé{quote.depositPercent ? ` (${Number(quote.depositPercent)} %)` : ""}</span>
+                <span className="tabular-nums">{formatMoney(depositAmount)}</span>
               </div>
             ) : null}
           </div>

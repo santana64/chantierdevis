@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/app-shell";
 import { ComplianceBadge, MarginBadge, QuoteStatusBadge } from "@/components/badges";
 import { Button, Card, CardHeader, InfoNotice, LinkButton, SuccessNotice, WarningNotice, inputClass } from "@/components/ui";
 import {
+  calculateDeposit,
   calculateQuoteLine,
   evaluateQuoteCompliance,
   formatFrenchDate,
@@ -66,6 +67,7 @@ export default async function QuoteDetailPage({
   if (!quote) notFound();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
 
+  const vatMode = company?.vatMode ?? "STANDARD";
   const calculatedLines = quote.lines.map((line) =>
     calculateQuoteLine({
       type: line.type,
@@ -75,10 +77,12 @@ export default async function QuoteDetailPage({
       unit: line.unit,
       unitPriceHtCents: line.unitPriceHtCents,
       unitCostCents: line.unitCostCents,
-      vatRate: Number(line.vatRate),
+      vatRate: vatMode === "FRANCHISE_BASE" ? 0 : Number(line.vatRate),
     }),
   );
   const compliance = evaluateQuoteCompliance(quote, company, quote.client, calculatedLines);
+  const depositAmount = quote.depositAmountCents ?? calculateDeposit(quote.totalTtcCents, Number(quote.depositPercent));
+  const displayTtc = vatMode === "FRANCHISE_BASE" ? quote.subtotalHtCents : quote.totalTtcCents;
   const latestDocument = quote.documents[0];
   const error = errorLabel(Array.isArray(query.error) ? query.error[0] : query.error);
   const emailMessage = emailLabel(Array.isArray(query.email) ? query.email[0] : query.email);
@@ -309,13 +313,28 @@ export default async function QuoteDetailPage({
                 </div>
                 <div className="flex justify-between border-t border-border bg-white px-4 py-3 text-sm">
                   <span className="text-muted">TVA</span>
-                  <strong className="tabular-nums">{formatMoney(quote.totalVatCents)}</strong>
+                  <strong className="tabular-nums">{formatMoney(vatMode === "FRANCHISE_BASE" ? 0 : quote.totalVatCents)}</strong>
                 </div>
                 <div className="flex justify-between bg-primary px-4 py-3 text-base font-bold text-white">
                   <span>Total TTC</span>
-                  <strong className="tabular-nums">{formatMoney(quote.totalTtcCents)}</strong>
+                  <strong className="tabular-nums">{formatMoney(displayTtc)}</strong>
                 </div>
+                {depositAmount > 0 ? (
+                  <>
+                    <div className="flex justify-between border-t border-border bg-white px-4 py-3 text-sm">
+                      <span className="text-muted">Acompte ({Number(quote.depositPercent)} %)</span>
+                      <strong className="tabular-nums text-amber-700">{formatMoney(depositAmount)}</strong>
+                    </div>
+                    <div className="flex justify-between border-t border-border bg-white px-4 py-3 text-sm font-semibold">
+                      <span>Reste à payer</span>
+                      <span className="tabular-nums">{formatMoney(Math.max(0, displayTtc - depositAmount))}</span>
+                    </div>
+                  </>
+                ) : null}
               </div>
+              {vatMode === "FRANCHISE_BASE" ? (
+                <p className="mt-3 text-xs text-muted">TVA non applicable, art. 293 B du CGI</p>
+              ) : null}
             </div>
           </Card>
 
