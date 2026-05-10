@@ -928,21 +928,63 @@ export async function sendQuoteEmailAction(quoteId: string, formData: FormData) 
   });
   const pdfBytes = await generateQuotePdfBytes({ company, client: quote.client, quote, lines: calculatedLines });
   const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
-  const subject = `Votre devis ${quote.quoteNumber} - ${quote.title}`;
+  const subject = `Votre devis ${quote.quoteNumber} — ${quote.title}`;
   const safeQuoteNumber = escapeEmailHtml(quote.quoteNumber);
   const safeQuoteTitle = escapeEmailHtml(quote.title);
   const safeCompanyName = escapeEmailHtml(company.companyName);
-  const html = `
-    <p>Bonjour,</p>
-    <p>Veuillez trouver ci-joint le devis ${safeQuoteNumber} pour ${safeQuoteTitle}.</p>
-    ${message ? `<p>${emailParagraph(message)}</p>` : ""}
-    <p>Cordialement,<br />${safeCompanyName}</p>
-  `;
+  const clientName = escapeEmailHtml(quote.client.companyName || quote.client.name);
+  const totalStr = (quote.totalTtcCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const validUntilStr = new Intl.DateTimeFormat("fr-FR").format(quote.validUntil);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
+  const signLink = quote.signatureToken ? `${appUrl}/sign/${quote.signatureToken}` : null;
+
+  const html = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8" /><title>Devis ${safeQuoteNumber}</title></head>
+<body style="margin:0;padding:0;background:#f5f2ec;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:32px auto;background:#fffdf8;border-radius:12px;overflow:hidden;border:1px solid #e2d9c8;">
+    <div style="background:#1f3b57;padding:24px 32px;">
+      <p style="margin:0;font-size:20px;font-weight:700;color:#fff;">${safeCompanyName}</p>
+      <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.6);">Devis n° ${safeQuoteNumber}</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="font-size:15px;color:#1f2933;">Bonjour ${clientName},</p>
+      <p style="font-size:15px;color:#1f2933;line-height:1.6;">
+        Veuillez trouver ci-joint votre devis pour : <strong>${safeQuoteTitle}</strong>.
+      </p>
+      ${message ? `<p style="font-size:15px;color:#1f2933;line-height:1.6;background:#f8fafc;border-left:3px solid #e86218;padding:12px 16px;border-radius:0 6px 6px 0;">${emailParagraph(message)}</p>` : ""}
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:24px 0;">
+        <p style="margin:0 0 12px;font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Récapitulatif</p>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:14px;color:#64748b;">N° devis</span>
+          <strong style="font-size:14px;color:#1f2933;">${safeQuoteNumber}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:14px;color:#64748b;">Objet</span>
+          <strong style="font-size:14px;color:#1f2933;">${safeQuoteTitle}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:14px;color:#64748b;">Montant TTC</span>
+          <strong style="font-size:18px;color:#1f3b57;">${totalStr}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="font-size:14px;color:#64748b;">Valable jusqu'au</span>
+          <strong style="font-size:14px;color:#1f2933;">${validUntilStr}</strong>
+        </div>
+      </div>
+      <p style="font-size:14px;color:#1f2933;">Le devis détaillé est joint à cet email en PDF.</p>
+      ${signLink ? `<div style="margin:24px 0;text-align:center;"><a href="${escapeEmailHtml(signLink)}" style="display:inline-block;background:#e86218;color:#fff;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px;">Signer le devis en ligne →</a><p style="margin:8px 0 0;font-size:12px;color:#64748b;">Depuis votre téléphone ou ordinateur, sans téléchargement</p></div>` : ""}
+      <p style="font-size:14px;color:#1f2933;margin-top:24px;">Cordialement,<br /><strong>${safeCompanyName}</strong></p>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 32px;font-size:11px;color:#94a3b8;">
+      Ce devis a été généré via ChantierDevis. Pour toute question, contactez directement l'émetteur.
+    </div>
+  </div>
+</body></html>`;
   const result = await sendTransactionalEmail({
     to: toEmail,
     subject,
     html,
-    text: `Bonjour,\n\nVeuillez trouver ci-joint le devis ${quote.quoteNumber} pour ${quote.title}.\n\n${message}\n\nCordialement,\n${company.companyName}`,
+    text: `Bonjour ${quote.client.companyName || quote.client.name},\n\nVeuillez trouver ci-joint le devis ${quote.quoteNumber} pour ${quote.title}.\nMontant TTC : ${totalStr} — Valable jusqu'au ${validUntilStr}.\n\n${message}\n\nCordialement,\n${company.companyName}`,
     attachment: {
       fileName: `${quote.quoteNumber}.pdf`,
       contentBase64: pdfBase64,
