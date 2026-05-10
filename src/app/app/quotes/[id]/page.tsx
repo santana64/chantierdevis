@@ -485,12 +485,22 @@ export default async function QuoteDetailPage({
                       onClick={(e) => (e.target as HTMLInputElement).select()}
                     />
                   </div>
-                  <form action={generateSignatureLinkAction.bind(null, quote.id)}>
-                    <Button type="submit" variant="secondary" size="sm">
-                      <Link2 aria-hidden className="h-3.5 w-3.5" />
-                      Regénérer le lien
-                    </Button>
-                  </form>
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`Bonjour,\n\nVoici votre devis ${quote.quoteNumber} à signer en ligne :\n${appUrl}/sign/${quote.signatureToken}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800 hover:bg-green-100"
+                    >
+                      WhatsApp
+                    </a>
+                    <form action={generateSignatureLinkAction.bind(null, quote.id)}>
+                      <Button type="submit" variant="secondary" size="sm">
+                        <Link2 aria-hidden className="h-3.5 w-3.5" />
+                        Regénérer
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">

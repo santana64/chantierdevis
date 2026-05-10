@@ -1,6 +1,7 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import Anthropic from "@anthropic-ai/sdk";
 import { Prisma } from "@prisma/client";
 import { addDays } from "date-fns";
 import { revalidatePath } from "next/cache";
@@ -1289,4 +1290,70 @@ export async function importPresetItemsAction(formData: FormData) {
 
   revalidatePath("/app/items");
   redirect(`/app/items?trade=${trade}&imported=${presets.length}`);
+}
+
+type AIGeneratedLine = {
+  type: "MATERIAL" | "LABOR" | "TRAVEL" | "SERVICE" | "DISCOUNT" | "SECTION";
+  title: string;
+  description: string;
+  quantity: number;
+  unit: "UNIT" | "HOUR" | "DAY" | "M2" | "M3" | "ML" | "PACKAGE";
+  unitPriceHtCents: number;
+  unitCostCents: number | null;
+  vatRate: number;
+};
+
+const AI_SYSTEM_PROMPT = `Tu es un expert en BTP français. Tu génères des lignes de devis réalistes pour artisans.
+Réponds UNIQUEMENT avec un tableau JSON valide, sans texte ni markdown, sans balises \`\`\`.
+Format de chaque objet :
+{"type":"SERVICE","title":"...","description":"...","quantity":1,"unit":"PACKAGE","unitPriceHtCents":10000,"unitCostCents":4000,"vatRate":10}
+Types : MATERIAL, LABOR, TRAVEL, SERVICE, DISCOUNT, SECTION
+Unités : UNIT, HOUR, DAY, M2, M3, ML, PACKAGE
+TVA : 10% rénovation habitation principale, 5.5% isolation/énergie, 20% neuf ou locaux pro, 0% franchise
+Les prix sont en centimes d'euros (ex: 150€ = 15000). Max 10 lignes. Prix réalistes marché français 2026.
+Sépare toujours matériaux et main-d'œuvre en lignes distinctes quand pertinent.`;
+
+export async function generateAIQuoteLinesAction(
+  description: string,
+  trade?: string,
+): Promise<ActionResult<AIGeneratedLine[]>> {
+  try {
+    await getCurrentUser();
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return { ok: false, message: "Assistant IA non configuré (ANTHROPIC_API_KEY manquant)." };
+    if (!description.trim()) return { ok: false, message: "La description est vide." };
+
+    const client = new Anthropic({ apiKey });
+    const tradeHint = trade && trade !== "" ? `Corps de métier : ${trade}. ` : "";
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      system: AI_SYSTEM_PROMPT,
+      messages: [{ role: "user", content: `${tradeHint}Génère les lignes de devis pour ce chantier :\n${description}` }],
+    });
+
+    const raw = message.content[0].type === "text" ? message.content[0].text.trim() : "";
+    const cleaned = raw.startsWith("```") ? raw.replace(/```(?:json)?/g, "").trim() : raw;
+    const parsed: unknown = JSON.parse(cleaned);
+    if (!Array.isArray(parsed)) throw new Error("Not an array");
+
+    const lines: AIGeneratedLine[] = (parsed as Record<string, unknown>[]).map((item) => ({
+      type: (item.type as AIGeneratedLine["type"]) ?? "SERVICE",
+      title: String(item.title ?? ""),
+      description: String(item.description ?? ""),
+      quantity: Math.max(0.01, Number(item.quantity) || 1),
+      unit: (item.unit as AIGeneratedLine["unit"]) ?? "PACKAGE",
+      unitPriceHtCents: Math.round(Math.max(0, Number(item.unitPriceHtCents) || 0)),
+      unitCostCents: item.unitCostCents != null ? Math.round(Math.max(0, Number(item.unitCostCents))) : null,
+      vatRate: Number(item.vatRate) || 10,
+    }));
+
+    return { ok: true, data: lines };
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return { ok: false, message: "L'IA n'a pas retourné un format valide. Réessayez avec une description plus précise." };
+    }
+    return toActionError(error);
+  }
 }

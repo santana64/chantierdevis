@@ -1,7 +1,7 @@
 "use client";
 
 import { addDays } from "date-fns";
-import { ArrowDown, ArrowUp, LibraryBig, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, LibraryBig, Plus, Save, Sparkles, Trash2 } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -11,7 +11,7 @@ import {
   formatMoney,
 } from "@/domain/quotes";
 import type { QuoteLineType, Trade, Unit, VatMode } from "@/domain/quotes/types";
-import { saveQuoteEditorAction } from "@/server/actions";
+import { generateAIQuoteLinesAction, saveQuoteEditorAction } from "@/server/actions";
 import { ComplianceBadge, MarginBadge } from "./badges";
 import { Button, Card, CardHeader, Field, WarningNotice, inputClass } from "./ui";
 
@@ -207,6 +207,10 @@ export function QuoteEditor({
   const [notesToClient, setNotesToClient] = useState(initialQuote?.notesToClient ?? "");
   const [internalNotes, setInternalNotes] = useState(initialQuote?.internalNotes ?? "");
   const [selectedItemId, setSelectedItemId] = useState(workItems[0]?.id ?? "");
+  const [aiDescription, setAiDescription] = useState("");
+  const [aiPending, setAiPending] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [showAI, setShowAI] = useState(false);
   const [lines, setLines] = useState<EditorLine[]>(
     initialQuote?.lines?.length ? initialQuote.lines : [emptyLine(company.vatMode)],
   );
@@ -297,6 +301,27 @@ export function QuoteEditor({
         vatRate: company.vatMode === "FRANCHISE_BASE" ? 0 : item.defaultVatRate,
       },
     ]);
+  }
+
+  async function handleAIGenerate() {
+    setAiError(null);
+    setAiPending(true);
+    const result = await generateAIQuoteLinesAction(aiDescription, trade || undefined);
+    if (result.ok) {
+      setLines((current) => [
+        ...current.filter((l) => l.title !== ""),
+        ...result.data.map((l) => ({
+          ...l,
+          vatRate: company.vatMode === "FRANCHISE_BASE" ? 0 : l.vatRate,
+          unitCostCents: l.unitCostCents ?? 0,
+        })),
+      ]);
+      setShowAI(false);
+      setAiDescription("");
+    } else {
+      setAiError(result.message);
+    }
+    setAiPending(false);
   }
 
   function moveLine(index: number, direction: -1 | 1) {
@@ -499,7 +524,7 @@ export function QuoteEditor({
               </div>
             }
           />
-          <div className="border-b border-border p-5">
+          <div className="border-b border-border p-5 space-y-3">
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <select className={inputClass} value={selectedItemId} onChange={(event) => setSelectedItemId(event.target.value)}>
                 {workItems.map((item) => (
@@ -512,6 +537,40 @@ export function QuoteEditor({
                 <LibraryBig aria-hidden className="h-4 w-4" />
                 Ajouter depuis la bibliothèque
               </Button>
+            </div>
+            <div className="rounded-xl border border-accent/30 bg-accent/5">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-accent"
+                onClick={() => setShowAI((v) => !v)}
+              >
+                <Sparkles aria-hidden className="h-4 w-4 shrink-0" />
+                Générer les lignes avec l&apos;IA
+                <span className="ml-auto text-xs font-normal text-accent/70">{showAI ? "▲ Masquer" : "▼ Ouvrir"}</span>
+              </button>
+              {showAI ? (
+                <div className="border-t border-accent/20 px-4 pb-4 pt-3 space-y-3">
+                  <p className="text-xs text-slate-500">
+                    Décrivez votre chantier en langage naturel — l&apos;IA génère les lignes avec prix, coût et TVA adaptés au marché BTP français.
+                  </p>
+                  <textarea
+                    className={inputClass}
+                    rows={3}
+                    value={aiDescription}
+                    onChange={(e) => setAiDescription(e.target.value)}
+                    placeholder="Ex : Rénovation salle de bain 6m² — dépose ancienne douche, pose receveur à l'italienne, faïence murale 18m², WC suspendu, robinetterie..."
+                  />
+                  {aiError ? <p className="text-xs font-medium text-red-600">{aiError}</p> : null}
+                  <Button
+                    type="button"
+                    onClick={handleAIGenerate}
+                    disabled={!aiDescription.trim() || aiPending}
+                  >
+                    <Sparkles aria-hidden className="h-4 w-4" />
+                    {aiPending ? "Génération en cours…" : "Générer les lignes"}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="overflow-x-auto">

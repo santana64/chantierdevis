@@ -3,10 +3,13 @@ import {
   BookOpenText,
   CheckCircle2,
   ClipboardCheck,
+  FileSignature,
   Hammer,
   Percent,
   Send,
   Shield,
+  Sparkles,
+  Smartphone,
   TrendingUp,
   Zap,
 } from "lucide-react";
@@ -14,54 +17,87 @@ import Link from "next/link";
 
 const features = [
   {
-    icon: ClipboardCheck,
-    title: "Conformité guidée",
-    text: "SIRET, TVA, assurance décennale, bon pour accord : les oublis visibles sont signalés avant l’envoi.",
+    icon: Sparkles,
+    title: "IA générative intégrée",
+    text: "Décrivez votre chantier en langage naturel : l'IA génère les lignes de devis avec prix, coût de revient et TVA adaptés au marché BTP français.",
+    badge: "Exclusif",
   },
   {
     icon: Percent,
     title: "Marge en temps réel",
-    text: "Chaque ligne calcule HT, TVA, TTC, coût de revient et marge brute. Vous savez si le chantier tient la route.",
+    text: "Chaque ligne calcule HT, TVA, TTC, coût de revient et marge brute. Vous savez si le chantier tient la route avant d'envoyer.",
+  },
+  {
+    icon: FileSignature,
+    title: "Signature électronique",
+    text: "Générez un lien sécurisé, partagez par WhatsApp ou email. Le client signe depuis son téléphone. Le devis passe en accepté automatiquement.",
+    badge: "Nouveau",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Conformité automatique",
+    text: "SIRET, TVA, assurance décennale, bon pour accord : les oublis sont signalés avant l'envoi. Zéro mention manquante.",
   },
   {
     icon: BookOpenText,
-    title: "Bibliothèque d\u2019ouvrages",
-    text: "Enregistrez vos prestations habituelles avec prix, coût et TVA. Ajoutez-les en un clic sur chaque devis.",
+    title: "Bibliothèque BTP pré-remplie",
+    text: "60+ ouvrages types par métier (plomberie, peinture, carrelage…) avec prix, coût et TVA. Importez-les en un clic, personnalisez ensuite.",
   },
   {
     icon: Send,
     title: "Suivi et relances",
-    text: "Devis envoyés sans réponse, expirés, à relancer : vous voyez tout de suite où reprendre contact.",
+    text: "Devis envoyés sans réponse, expirés, à relancer : vous voyez tout d'un coup d'œil. Relances automatiques 7 jours après l'envoi.",
+  },
+  {
+    icon: Smartphone,
+    title: "Fonctionne sur mobile",
+    text: "Application installable sur iPhone et Android. Créez un devis en déplacement, signez depuis le chantier.",
+  },
+  {
+    icon: Shield,
+    title: "Données isolées et sécurisées",
+    text: "Vos clients et devis ne sont jamais accessibles à d'autres utilisateurs. Hébergement EU, chiffrement HTTPS, mots de passe jamais stockés en clair.",
   },
 ];
 
 const workflow = [
   {
     step: "01",
-    title: "Client et chantier",
-    text: "Sélectionnez un client existant ou créez-le sans quitter le devis. L\u2019adresse chantier se pré-remplit.",
+    title: "Décrivez votre chantier",
+    text: "Tapez une description en langage naturel ou sélectionnez un client existant. L'adresse chantier se pré-remplit.",
   },
   {
     step: "02",
-    title: "Ouvrages réutilisables",
-    text: "Piochez dans votre bibliothèque ou ajoutez des lignes manuelles. Sections, remises et forfaits disponibles.",
+    title: "L'IA génère les lignes",
+    text: "En quelques secondes, l'assistant IA propose les prestations avec prix, coût de revient et TVA réalistes. Modifiez à votre guise.",
   },
   {
     step: "03",
-    title: "Marge et conformité",
-    text: "Le panneau latéral affiche les totaux, la marge et les mentions manquantes en direct pendant la saisie.",
+    title: "Marge et conformité en direct",
+    text: "Le panneau latéral affiche les totaux, la marge brute et les mentions manquantes en temps réel pendant la saisie.",
   },
   {
     step: "04",
-    title: "Document prêt à signer",
-    text: "Générez un PDF imprimable ou envoyez le devis par email depuis le cockpit. Pas de Word, pas de bricolage.",
+    title: "Signature et facture",
+    text: "Envoyez un lien de signature par WhatsApp. Quand le client signe, convertissez en facture en un clic. Zéro bricolage.",
   },
+];
+
+const comparison = [
+  { feature: "IA générative pour devis", chantierdevis: true, tolteck: false, synobat: false },
+  { feature: "Marge visible ligne par ligne", chantierdevis: true, tolteck: true, synobat: false },
+  { feature: "Signature électronique", chantierdevis: true, tolteck: true, synobat: true },
+  { feature: "WhatsApp share en 1 clic", chantierdevis: true, tolteck: false, synobat: false },
+  { feature: "PWA installable mobile", chantierdevis: true, tolteck: false, synobat: false },
+  { feature: "Bibliothèque BTP pré-remplie", chantierdevis: true, tolteck: true, synobat: true },
+  { feature: "Conformité mentions guidée", chantierdevis: true, tolteck: true, synobat: false },
+  { feature: "Prix mensuel HT", chantierdevis: "19 €", tolteck: "29 €", synobat: "25 €" },
 ];
 
 const pricing = [
   {
     name: "Gratuit",
-    price: "0\u00a0€",
+    price: "0 €",
     period: "",
     description: "Pour tester sans engagement.",
     items: [
@@ -74,13 +110,14 @@ const pricing = [
   },
   {
     name: "Solo",
-    price: "19\u00a0€",
+    price: "19 €",
     period: "/mois",
-    description: "Pour l\u2019artisan indépendant actif.",
+    description: "Pour l’artisan indépendant actif.",
     items: [
       "Devis illimités",
       "20 clients",
-      "Ouvrages réutilisables",
+      "Assistant IA illimité",
+      "Signature électronique",
       "Export PDF et impression",
       "Suivi basique",
     ],
@@ -89,31 +126,32 @@ const pricing = [
   },
   {
     name: "Pro",
-    price: "29\u00a0€",
+    price: "29 €",
     period: "/mois",
     description: "Pour optimiser chaque chantier.",
     recommended: true,
     items: [
       "Clients illimités",
       "Ouvrages illimités",
-      "Suivi des marges",
+      "Suivi des marges avancé",
       "Checklist de conformité",
       "Duplication et modèles",
-      "Relances et rappels",
+      "Relances et rappels automatiques",
+      "Support prioritaire",
     ],
     cta: "Choisir Pro",
     ctaVariant: "primary" as const,
   },
   {
     name: "Entreprise artisanale",
-    price: "49\u00a0€",
+    price: "49 €",
     period: "/mois",
     description: "Pour la structure en croissance.",
     items: [
+      "Tout le plan Pro",
       "Paramètres avancés de structure",
-      "Paramètres documents avancés",
-      "Support prioritaire",
       "Modèles multi-corps de métier",
+      "Support dédié",
     ],
     cta: "Créer un compte",
     ctaVariant: "secondary" as const,
@@ -122,31 +160,29 @@ const pricing = [
 
 const faqs = [
   {
-    q: "Est-ce un outil juridique\u00a0?",
-    a: "Non. ChantierDevis aide à vérifier les mentions courantes et à structurer vos documents, mais ne remplace pas un expert-comptable, un avocat ou votre fédération professionnelle.",
+    q: "Comment fonctionne l’assistant IA ?",
+    a: "Décrivez votre chantier en quelques phrases (\"rénovation cuisine 12m², plomberie et carrelage\"). L'IA génère les lignes de devis avec des prix réalistes du marché BTP français 2026, que vous pouvez modifier avant d'enregistrer.",
   },
   {
-    q: "La franchise en base de TVA est-elle gérée\u00a0?",
-    a: "Oui. Le mode franchise force la TVA à 0 sur toutes les lignes et ajoute automatiquement la mention légale \u00ab\u00a0TVA non applicable, art.\u00a0293\u00a0B du CGI\u00a0\u00bb.",
+    q: "La signature électronique a-t-elle une valeur légale ?",
+    a: "La signature canvas constitue un accord commercial entre vous et votre client. Pour des chantiers importants, nous recommandons de compléter par un bon de commande papier signé. ChantierDevis ne remplace pas un conseil juridique.",
   },
   {
-    q: "Puis-je réutiliser mes prestations habituelles\u00a0?",
-    a: "Oui. La bibliothèque d\u2019ouvrages permet de conserver prix de vente, coût de revient, TVA et description. Ajoutez-les en un clic sur chaque devis.",
+    q: "Est-ce un outil juridique ?",
+    a: "Non. ChantierDevis aide à vérifier les mentions courantes, mais ne remplace pas un expert-comptable, un avocat ou votre fédération professionnelle.",
   },
   {
-    q: "Comment fonctionne la conversion en facture\u00a0?",
-    a: "Un devis accepté peut être converti en facture en un clic. Les coordonnées, lignes et montants sont repris automatiquement.",
+    q: "La franchise en base de TVA est-elle gérée ?",
+    a: "Oui. Le mode franchise force la TVA à 0 sur toutes les lignes et ajoute la mention légale « TVA non applicable, art. 293 B du CGI ».",
   },
   {
-    q: "Mes données sont-elles privées\u00a0?",
-    a: "Chaque compte dispose d\u2019un espace isolé. Vos clients, devis et ouvrages ne sont jamais accessibles à d\u2019autres utilisateurs.",
+    q: "Puis-je réutiliser mes prestations habituelles ?",
+    a: "Oui. La bibliothèque d’ouvrages conserve prix de vente, coût de revient, TVA et description. Ajoutez-les en un clic ou importez les 60+ ouvrages BTP pré-remplis par métier.",
   },
-];
-
-const trustPoints = [
-  { icon: Shield, text: "Devis prêts à signer" },
-  { icon: Zap, text: "Sans Word ni Excel" },
-  { icon: TrendingUp, text: "Marge visible avant envoi" },
+  {
+    q: "Mes données sont-elles privées ?",
+    a: "Chaque compte est strictement isolé côté serveur. Vos clients, devis et ouvrages ne sont jamais accessibles à d’autres utilisateurs. Données hébergées en Europe (AWS eu-west-2).",
+  },
 ];
 
 export default function Home() {
@@ -154,7 +190,6 @@ export default function Home() {
     <main className="bg-background text-foreground">
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#0f1f31] text-white">
-        {/* Grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
@@ -164,25 +199,28 @@ export default function Home() {
           }}
         />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          {/* Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-1.5 text-sm font-semibold text-white/90">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-            Devis BTP, marges et relances au même endroit
+          <div className="mb-6 flex flex-wrap gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-4 py-1.5 text-sm font-semibold text-accent">
+              <Sparkles aria-hidden className="h-3.5 w-3.5" />
+              IA générative intégrée — exclusif dans ce segment
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-1.5 text-sm font-semibold text-white/90">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />
+              Signature électronique · PWA mobile
+            </div>
           </div>
 
-          {/* Headline */}
           <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            Des devis BTP{" "}
-            <span className="text-accent">propres, rentables</span>
-            {" "}et prêts à signer en quelques minutes.
+            Le devis BTP{" "}
+            <span className="text-accent">le plus intelligent</span>
+            {" "}du marché. À 19 €/mois.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
-            ChantierDevis aide les artisans à créer des devis professionnels, calculer leurs
-            marges, vérifier les points à compléter et envoyer des documents prêts à signer.
+            Décrivez votre chantier, l&apos;IA génère les lignes. Marge visible avant envoi.
+            Signature électronique par WhatsApp. Conformité vérifiée automatiquement.
             Sans Excel, sans Word, sans bricolage.
           </p>
 
-          {/* CTAs */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/register?next=/app/quotes/new"
@@ -199,17 +237,17 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Trust strip */}
           <div className="mt-10 flex flex-wrap gap-6">
-            {trustPoints.map((point) => {
-              const Icon = point.icon;
-              return (
-                <div key={point.text} className="flex items-center gap-2 text-sm text-white/60">
-                  <Icon aria-hidden className="h-4 w-4 text-accent" />
-                  {point.text}
-                </div>
-              );
-            })}
+            {[
+              { icon: Sparkles, text: "IA pour chaque devis" },
+              { icon: TrendingUp, text: "Marge visible avant envoi" },
+              { icon: Zap, text: "Sans Word ni Excel" },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-2 text-sm text-white/60">
+                <Icon aria-hidden className="h-4 w-4 text-accent" />
+                {text}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -220,96 +258,55 @@ export default function Home() {
               <div className="h-3 w-3 rounded-full bg-red-400/60" />
               <div className="h-3 w-3 rounded-full bg-amber-400/60" />
               <div className="h-3 w-3 rounded-full bg-green-400/60" />
-              <span className="ml-3 text-xs text-white/40">ChantierDevis · Devis DEV-2026-0042</span>
+              <span className="ml-3 text-xs text-white/40">ChantierDevis · Assistant IA · DEV-2026-0042</span>
             </div>
             <div className="grid gap-0 md:grid-cols-[1fr_300px]">
-              {/* Quote preview */}
               <div className="border-r border-white/10 bg-[#fefcf7] p-6 text-slate-900">
-                <div className="flex items-start justify-between border-b border-slate-200 pb-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#1e3a5a]">DEV-2026-0042</p>
-                    <h2 className="mt-1 text-lg font-bold">Rénovation salle de bain complète</h2>
-                    <p className="mt-0.5 text-sm text-slate-500">M. Martin · Chantier : 92100 Boulogne-Billancourt</p>
-                  </div>
-                  <span className="shrink-0 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-bold text-green-800">
-                    Prêt à envoyer
-                  </span>
+                <div className="mb-4 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3">
+                  <p className="text-xs font-semibold text-accent">
+                    ✨ IA — Rénovation salle de bain 8m², plomberie + carrelage
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">6 lignes générées en 2 secondes · Prix marché BTP 2026</p>
                 </div>
-                <div className="mt-4 space-y-2 text-sm">
+                <div className="space-y-2 text-sm">
                   {[
-                    ["Dépose ancienne installation", "420,00 €"],
-                    ["Pose carrelage 18 m²", "1\u00a0260,00 €"],
-                    ["Remplacement ballon eau chaude", "890,00 €"],
-                    ["Main-d\u2019œuvre qualifiée", "1\u00a0116,00 €"],
-                  ].map(([item, price]) => (
+                    ["Dépose ancienne installation", "1 FORFAIT", "280,00 €"],
+                    ["Pose carrelage sol 8m²", "8 m²", "440,00 €"],
+                    ["Faïence murale 22m²", "22 m²", "1 276,00 €"],
+                    ["WC suspendu bâti-support", "1 U", "480,00 €"],
+                    ["Robinetterie douche", "1 U", "320,00 €"],
+                    ["Main-d’œuvre qualifiée", "18 h", "1 080,00 €"],
+                  ].map(([item, qty, price]) => (
                     <div key={item} className="flex items-center justify-between border-b border-slate-100 py-2">
-                      <span className="text-slate-700">{item}</span>
+                      <div>
+                        <span className="font-medium text-slate-800">{item}</span>
+                        <span className="ml-2 text-xs text-slate-400">{qty}</span>
+                      </div>
                       <strong className="tabular-nums">{price}</strong>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 space-y-1 text-sm">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Total HT</span><strong>3\u00a0686,00 €</strong>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>TVA 20%</span><strong>737,20 €</strong>
-                  </div>
-                  <div className="flex justify-between rounded-lg bg-[#1e3a5a] px-3 py-2 text-base font-bold text-white">
-                    <span>Total TTC</span><strong>4\u00a0423,20 €</strong>
-                  </div>
+                <div className="mt-4 flex justify-between rounded-lg bg-[#1e3a5a] px-3 py-2 text-base font-bold text-white">
+                  <span>Total TTC</span><strong>4 542,00 €</strong>
                 </div>
               </div>
-              {/* Side panel */}
               <div className="grid content-between gap-3 p-4">
                 <div className="rounded-xl bg-white/10 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-white/50">Marge brute</p>
-                  <p className="mt-1 text-3xl font-bold text-green-400">38,4 %</p>
-                  <p className="mt-1 text-xs text-white/50">Coût intégré ligne par ligne</p>
+                  <p className="mt-1 text-3xl font-bold text-green-400">41,2 %</p>
+                  <p className="mt-1 text-xs text-white/50">Coût intégré par ligne</p>
                 </div>
                 <div className="rounded-xl bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-white/50">Conformité</p>
-                  <ul className="mt-2 space-y-1.5 text-sm text-white/80">
-                    {["SIRET renseigné", "TVA par ligne", "Adresse chantier", "Bon pour accord"].map((item) => (
-                      <li key={item} className="flex items-center gap-2">
-                        <CheckCircle2 aria-hidden className="h-3.5 w-3.5 shrink-0 text-green-400" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-white/50">Prêt à signer</p>
+                  <p className="mt-2 text-sm font-semibold text-white">Lien WhatsApp généré →</p>
+                  <p className="mt-1 text-xs text-white/50">Client signe depuis son téléphone</p>
                 </div>
                 <div className="rounded-xl bg-white/10 p-4 text-center">
-                  <p className="text-xs text-white/50">Action suivante</p>
-                  <p className="mt-1 text-sm font-semibold text-white">Envoyer au client</p>
+                  <CheckCircle2 aria-hidden className="mx-auto h-6 w-6 text-green-400" />
+                  <p className="mt-1.5 text-xs text-white/70">Conformité OK · 0 mention manquante</p>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PROBLEM */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16 lg:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-widest text-accent">Le problème</p>
-            <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
-              Un devis, c&apos;est plus que remplir un modèle Word.
-            </h2>
-          </div>
-          <div className="space-y-4 text-base leading-relaxed text-muted">
-            <p>
-              Un artisan doit aller vite, rassurer le client, ne rien oublier, préserver sa marge
-              et garder une trace claire de chaque échange.
-            </p>
-            <p>
-              Word, Excel et les modèles bricolés finissent par mélanger prix, TVA, descriptions,
-              mentions obligatoires et relances client. Sans calcul automatique, une ligne sous-cotée
-              passe inaperçue jusqu&apos;à la fin du chantier.
-            </p>
-            <p className="font-semibold text-foreground">
-              ChantierDevis remplace tout ça par un poste de pilotage simple, pensé pour le terrain.
-            </p>
           </div>
         </div>
       </section>
@@ -320,7 +317,7 @@ export default function Home() {
           <div className="text-center">
             <p className="text-sm font-bold uppercase tracking-widest text-accent">Fonctionnement</p>
             <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-              De zéro au devis prêt à signer en quelques minutes.
+              Du chantier au devis signé en quelques minutes.
             </h2>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -339,7 +336,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-widest text-accent">Fonctionnalités</p>
-          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Ce que ChantierDevis remplace.</h2>
+          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Tout ce qu&apos;un outil BTP doit faire.</h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => {
@@ -347,8 +344,13 @@ export default function Home() {
             return (
               <article
                 key={feature.title}
-                className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+                className="relative rounded-2xl border border-border bg-card p-6 shadow-sm"
               >
+                {feature.badge ? (
+                  <span className="absolute right-4 top-4 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white">
+                    {feature.badge}
+                  </span>
+                ) : null}
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
                   <Icon aria-hidden className="h-5 w-5 text-accent" />
                 </div>
@@ -360,7 +362,52 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRODUCT OVERVIEW */}
+      {/* COMPARISON TABLE */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-accent">Comparatif</p>
+            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
+              ChantierDevis vs la concurrence.
+            </h2>
+            <p className="mt-3 text-base text-muted">Seul outil de ce segment avec IA générative intégrée.</p>
+          </div>
+          <div className="mt-10 overflow-hidden rounded-2xl border border-border shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-[#0f1f31] text-white">
+                  <th className="px-5 py-4 text-left font-semibold">Fonctionnalité</th>
+                  <th className="px-4 py-4 text-center font-bold text-accent">ChantierDevis</th>
+                  <th className="px-4 py-4 text-center font-semibold text-white/70">Tolteck</th>
+                  <th className="px-4 py-4 text-center font-semibold text-white/70">Synobat</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {comparison.map((row) => (
+                  <tr key={row.feature} className="bg-card hover:bg-white transition-colors">
+                    <td className="px-5 py-3.5 font-medium text-foreground">{row.feature}</td>
+                    {[row.chantierdevis, row.tolteck, row.synobat].map((value, i) => (
+                      <td key={i} className="px-4 py-3.5 text-center">
+                        {typeof value === "boolean" ? (
+                          value ? (
+                            <CheckCircle2 aria-label="Oui" className="mx-auto h-5 w-5 text-green-500" />
+                          ) : (
+                            <span aria-label="Non" className="text-slate-300 text-lg">×</span>
+                          )
+                        ) : (
+                          <span className={i === 0 ? "font-bold text-accent" : "text-muted"}>{value}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* COCKPIT */}
       <section className="bg-[#1e3a5a] py-20 text-white">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
           <div>
@@ -370,12 +417,12 @@ export default function Home() {
             </h2>
             <p className="mt-5 text-base leading-relaxed text-white/65">
               Le tableau de bord affiche les devis à relancer, les brouillons incomplets, les
-              montants acceptés et votre marge moyenne du mois. Pas besoin de fouiller.
+              montants acceptés et votre marge moyenne du mois.
             </p>
             <ul className="mt-6 space-y-3">
               {[
                 "Montant devisé et accepté ce mois",
-                "Taux d\u2019acceptation et marge moyenne",
+                "Taux d’acceptation et marge moyenne",
                 "Devis expirés, à relancer, à compléter",
                 "Conversion en facture en un clic",
               ].map((item) => (
@@ -393,8 +440,8 @@ export default function Home() {
             <div className="grid gap-3 p-4 sm:grid-cols-3">
               {[
                 { label: "Devis ce mois", value: "12" },
-                { label: "Montant accepté", value: "18\u00a0640\u00a0€" },
-                { label: "À relancer", value: "3" },
+                { label: "Montant accepté", value: "18 640 €" },
+                { label: "Marge moyenne", value: "41 %" },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-slate-200 p-4">
                   <p className="text-xs text-slate-500">{stat.label}</p>
@@ -404,7 +451,7 @@ export default function Home() {
             </div>
             <div className="mx-4 mb-4 overflow-hidden rounded-xl border border-slate-200">
               {[
-                { ref: "DEV-2026-0042", title: "Rénovation salle de bain", badge: "Envoyé", color: "amber" },
+                { ref: "DEV-2026-0042", title: "Salle de bain — IA", badge: "Signé ✓", color: "green" },
                 { ref: "DEV-2026-0041", title: "Mise en peinture", badge: "Accepté", color: "green" },
                 { ref: "DEV-2026-0040", title: "Pose carrelage", badge: "À relancer", color: "red" },
               ].map((row, i) => (
@@ -418,11 +465,7 @@ export default function Home() {
                   </div>
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                      row.color === "green"
-                        ? "bg-green-50 text-green-800"
-                        : row.color === "amber"
-                          ? "bg-amber-50 text-amber-800"
-                          : "bg-red-50 text-red-700"
+                      row.color === "green" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-700"
                     }`}
                   >
                     {row.badge}
@@ -440,7 +483,7 @@ export default function Home() {
           <p className="text-sm font-bold uppercase tracking-widest text-accent">Tarifs</p>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Une formule claire pour chaque profil.</h2>
           <p className="mx-auto mt-3 max-w-xl text-base text-muted">
-            Commencez gratuitement. Passez à une formule payante quand vous en avez besoin.
+            Commencez gratuitement. L&apos;assistant IA est inclus dès le plan Solo.
           </p>
         </div>
         <div className="mt-12 grid gap-6 lg:grid-cols-4">
@@ -464,12 +507,8 @@ export default function Home() {
                 <h3 className="text-base font-bold text-foreground">{plan.name}</h3>
                 <p className="mt-1 text-xs text-muted">{plan.description}</p>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-3xl font-black tabular-nums text-foreground">
-                    {plan.price}
-                  </span>
-                  {plan.period ? (
-                    <span className="text-sm text-muted">{plan.period}</span>
-                  ) : null}
+                  <span className="text-3xl font-black tabular-nums text-foreground">{plan.price}</span>
+                  {plan.period ? <span className="text-sm text-muted">{plan.period}</span> : null}
                 </div>
               </div>
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
@@ -520,7 +559,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-lg bg-[#0f1f31] p-10 text-white shadow-2xl sm:p-14">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0f1f31] p-10 text-white shadow-2xl sm:p-14">
           <div
             className="absolute inset-0 opacity-[0.06]"
             style={{
@@ -530,59 +569,45 @@ export default function Home() {
             }}
           />
           <div className="relative">
-          <Hammer aria-hidden className="h-10 w-10 text-accent" />
-          <h2 className="mt-6 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
-            Prêt à remplacer vos modèles Word et Excel\u00a0?
-          </h2>
-          <p className="mt-4 max-w-xl text-lg text-white/65">
-            Créez un premier devis, ajoutez vos ouvrages habituels, puis générez un document
-            imprimable et professionnel. En quelques minutes.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/register?next=/app/quotes/new"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-accent px-6 text-base font-bold text-white shadow-lg transition hover:bg-[#cc5810]"
-            >
-              Créer mon premier devis
-              <ArrowRight aria-hidden className="h-5 w-5" />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-white/20 bg-white/8 px-6 text-base font-semibold text-white transition hover:bg-white/15"
-            >
-              J&apos;ai déjà un compte
-            </Link>
-          </div>
+            <Hammer aria-hidden className="h-10 w-10 text-accent" />
+            <h2 className="mt-6 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
+              Prêt à essayer le devis BTP avec IA ?
+            </h2>
+            <p className="mt-4 max-w-xl text-lg text-white/65">
+              Décrivez votre premier chantier, laissez l&apos;IA générer les lignes, ajustez et
+              envoyez. En moins de 5 minutes. Gratuit pour commencer.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/register?next=/app/quotes/new"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-accent px-6 text-base font-bold text-white shadow-lg transition hover:bg-[#cc5810]"
+              >
+                Créer mon premier devis
+                <ArrowRight aria-hidden className="h-5 w-5" />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex h-12 items-center justify-center rounded-xl border border-white/20 bg-white/8 px-6 text-base font-semibold text-white transition hover:bg-white/15"
+              >
+                J&apos;ai déjà un compte
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Legal disclaimer */}
         <div className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-950">
           <p>
-            <strong>Avertissement\u00a0:</strong> ChantierDevis est un outil d&apos;aide à la création de
+            <strong>Avertissement :</strong> ChantierDevis est un outil d&apos;aide à la création de
             devis. Il ne remplace pas un expert-comptable, un avocat, une fédération professionnelle
-            ou un conseil juridique personnalisé. Vérifiez toujours vos documents auprès d&apos;un
-            professionnel compétent avant envoi.
+            ou un conseil juridique personnalisé. Les prix générés par l&apos;IA sont indicatifs.
           </p>
         </div>
 
-        {/* Footer nav */}
-        <nav
-          className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted"
-          aria-label="Liens légaux"
-        >
-          <Link href="/legal/mentions-legales" className="hover:text-primary hover:underline">
-            Mentions légales
-          </Link>
-          <Link href="/legal/confidentialite" className="hover:text-primary hover:underline">
-            Confidentialité
-          </Link>
-          <Link href="/legal/cgv" className="hover:text-primary hover:underline">
-            CGV
-          </Link>
-          <Link href="/legal/rgpd" className="hover:text-primary hover:underline">
-            RGPD
-          </Link>
+        <nav className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Liens légaux">
+          <Link href="/legal/mentions-legales" className="hover:text-primary hover:underline">Mentions légales</Link>
+          <Link href="/legal/confidentialite" className="hover:text-primary hover:underline">Confidentialité</Link>
+          <Link href="/legal/cgv" className="hover:text-primary hover:underline">CGV</Link>
+          <Link href="/legal/rgpd" className="hover:text-primary hover:underline">RGPD</Link>
           <span className="ml-auto text-muted/60">© 2026 ChantierDevis</span>
         </nav>
       </section>
