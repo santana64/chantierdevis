@@ -134,7 +134,7 @@ function dateInput(date: Date) {
 }
 
 function eurosFromCents(cents: number | null | undefined) {
-  return ((cents ?? 0) / 100).toFixed(2);
+  return ((cents ?? 0) / 100).toFixed(2).replace(".", ",");
 }
 
 function centsFromEuros(value: string) {

@@ -259,10 +259,10 @@ export default async function ItemsPage({
                       </Field>
                     </div>
                     <Field label="Prix unitaire HT (€)">
-                      <input className={inputClass} name="defaultUnitPrice" defaultValue={(item.defaultUnitPriceCents / 100).toFixed(2)} />
+                      <input className={inputClass} name="defaultUnitPrice" defaultValue={(item.defaultUnitPriceCents / 100).toFixed(2).replace(".", ",")} />
                     </Field>
                     <Field label="Coût HT (€)">
-                      <input className={inputClass} name="defaultCost" defaultValue={(item.defaultCostCents / 100).toFixed(2)} />
+                      <input className={inputClass} name="defaultCost" defaultValue={(item.defaultCostCents / 100).toFixed(2).replace(".", ",")} />
                     </Field>
                     <Field label="TVA (%)">
                       <select className={inputClass} name="defaultVatRate" defaultValue={String(item.defaultVatRate)}>
