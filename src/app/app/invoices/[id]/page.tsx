@@ -1,4 +1,4 @@
-import { Ban, Bell, CheckCircle2, Download, ExternalLink, Mail, Send } from "lucide-react";
+import { Ban, Bell, CalendarDays, CheckCircle2, Download, ExternalLink, Mail, Send } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
@@ -11,6 +11,7 @@ import {
   cancelInvoiceAction,
   createInvoicePaymentLinkAction,
   sendInvoiceEmailAction,
+  updateInvoiceDueDateAction,
 } from "@/server/actions";
 import InvoicePaymentLinkButton from "./InvoicePaymentLinkButton";
 
@@ -256,6 +257,37 @@ export default async function InvoiceDetailPage({
                 ) : (
                   <InvoicePaymentLinkButton invoiceId={invoice.id} />
                 )}
+              </div>
+            </Card>
+          )}
+
+          {/* Edit due date */}
+          {invoice.status !== "PAID" && invoice.status !== "CANCELLED" && (
+            <Card>
+              <CardHeader
+                title="Échéance"
+                description="Modifiez la date d'échéance et réémettez la facture."
+              />
+              <div className="p-4">
+                <form action={updateInvoiceDueDateAction.bind(null, invoice.id)} className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs font-medium text-muted">Nouvelle échéance</label>
+                    <input
+                      name="dueDate"
+                      type="date"
+                      defaultValue={invoice.dueDate.toISOString().slice(0, 10)}
+                      required
+                      className="h-9 w-full rounded-lg border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-white px-3 text-xs font-semibold text-foreground shadow-sm hover:bg-gray-50"
+                  >
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    Modifier
+                  </button>
+                </form>
               </div>
             </Card>
           )}

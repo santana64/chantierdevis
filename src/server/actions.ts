@@ -1584,6 +1584,23 @@ export async function cancelInvoiceAction(invoiceId: string) {
   redirect(`/app/invoices/${invoiceId}`);
 }
 
+// ─── Update invoice due date ─────────────────────────────────────────────────
+
+export async function updateInvoiceDueDateAction(invoiceId: string, formData: FormData) {
+  const user = await getCurrentUser();
+  const dateStr = stringFromForm(formData.get("dueDate"));
+  if (!dateStr) redirect(`/app/invoices/${invoiceId}`);
+  const dueDate = new Date(dateStr);
+  if (isNaN(dueDate.getTime())) redirect(`/app/invoices/${invoiceId}`);
+
+  await prisma.invoice.updateMany({
+    where: { id: invoiceId, userId: user.id, status: { not: "PAID" }, NOT: { status: "CANCELLED" } },
+    data: { status: "ISSUED", dueDate },
+  });
+  revalidatePath(`/app/invoices/${invoiceId}`);
+  redirect(`/app/invoices/${invoiceId}?issued=1`);
+}
+
 // ─── Send invoice by email ────────────────────────────────────────────────────
 
 export async function sendInvoiceEmailAction(invoiceId: string, formData: FormData) {
