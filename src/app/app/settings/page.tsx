@@ -1,3 +1,4 @@
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button, Card, CardHeader, Field, LegalDisclaimer, SectionDivider, inputClass } from "@/components/ui";
 import { saveCompanyProfileAction } from "@/server/actions";
@@ -14,12 +15,54 @@ export default async function SettingsPage({
   const params = await searchParams;
   const { user, company } = await getAppContext();
 
+  const completionChecks = [
+    { label: "Nom entreprise", done: !!company?.companyName },
+    { label: "Adresse complète", done: !!(company?.address && company?.postalCode && company?.city) },
+    { label: "SIRET", done: !!company?.siret },
+    { label: "Téléphone ou email", done: !!(company?.phone || company?.email) },
+    { label: "Assurance décennale", done: !!(company?.insuranceProvider && company?.insurancePolicyNumber) },
+  ];
+  const completionPct = Math.round((completionChecks.filter((c) => c.done).length / completionChecks.length) * 100);
+
   return (
     <>
       <PageHeader
         title="Paramètres entreprise"
         description="Ces informations alimentent les devis, la conformité, la TVA et le pied de document."
       />
+      {/* Profile completion */}
+      {completionPct < 100 && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+              <p className="text-sm font-semibold text-amber-900">
+                Profil complété à {completionPct} %
+              </p>
+            </div>
+            <div className="shrink-0 text-xs font-semibold text-amber-700">
+              {completionChecks.filter((c) => c.done).length}/{completionChecks.length}
+            </div>
+          </div>
+          <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-amber-200">
+            <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${completionPct}%` }} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {completionChecks.map((check) => (
+              <span
+                key={check.label}
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                  check.done ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-800"
+                }`}
+              >
+                <CheckCircle2 className={`h-3 w-3 ${check.done ? "text-green-600" : "text-amber-500"}`} />
+                {check.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {params.saved ? (
         <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-900">
           Profil entreprise enregistré avec succès.

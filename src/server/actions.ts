@@ -1583,3 +1583,98 @@ export async function cancelInvoiceAction(invoiceId: string) {
   revalidatePath(`/app/invoices/${invoiceId}`);
   redirect(`/app/invoices/${invoiceId}`);
 }
+
+// ─── Send invoice by email ────────────────────────────────────────────────────
+
+export async function sendInvoiceEmailAction(invoiceId: string, formData: FormData) {
+  const user = await getCurrentUser();
+  const toEmail = stringFromForm(formData.get("toEmail"));
+  const message = stringFromForm(formData.get("message"));
+  if (!toEmail || !toEmail.includes("@")) redirect(`/app/invoices/${invoiceId}?email=invalid`);
+
+  const invoice = await prisma.invoice.findFirst({
+    where: { id: invoiceId, userId: user.id },
+    include: {
+      client: true,
+      lines: { orderBy: { position: "asc" } },
+      quote: { select: { quoteNumber: true } },
+    },
+  });
+  if (!invoice) redirect(`/app/invoices/${invoiceId}`);
+  if (invoice.status === "CANCELLED") redirect(`/app/invoices/${invoiceId}`);
+
+  const company = await prisma.companyProfile.findUnique({ where: { userId: user.id } });
+  const clientName = escapeEmailHtml(invoice.client.companyName || invoice.client.name);
+  const companyName = escapeEmailHtml(company?.companyName ?? "Votre prestataire");
+  const invoiceNum = escapeEmailHtml(invoice.invoiceNumber);
+  const dueStr = new Intl.DateTimeFormat("fr-FR").format(invoice.dueDate);
+  const issuedStr = new Intl.DateTimeFormat("fr-FR").format(invoice.issueDate);
+  const totalStr = (invoice.totalTtcCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const htStr = (invoice.subtotalHtCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const paymentLinkHtml = invoice.stripePaymentLinkUrl
+    ? `<div style="margin:24px 0;text-align:center;"><a href="${escapeEmailHtml(invoice.stripePaymentLinkUrl)}" style="display:inline-block;background:#e86218;color:#fff;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px;">Payer en ligne →</a><p style="margin:8px 0 0;font-size:12px;color:#64748b;">Paiement sécurisé par carte bancaire</p></div>`
+    : "";
+
+  const html = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8" /><title>Facture ${invoiceNum}</title></head>
+<body style="margin:0;padding:0;background:#f5f2ec;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:32px auto;background:#fffdf8;border-radius:12px;overflow:hidden;border:1px solid #e2d9c8;">
+    <div style="background:#1f3b57;padding:24px 32px;">
+      <p style="margin:0;font-size:20px;font-weight:700;color:#fff;">${companyName}</p>
+      <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.6);">Facture n° ${invoiceNum}</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="font-size:15px;color:#1f2933;">Bonjour ${clientName},</p>
+      <p style="font-size:15px;color:#1f2933;line-height:1.6;">
+        Veuillez trouver ci-joint votre facture <strong>${invoiceNum}</strong>.
+      </p>
+      ${message ? `<p style="font-size:15px;color:#1f2933;line-height:1.6;background:#f8fafc;border-left:3px solid #e86218;padding:12px 16px;border-radius:0 6px 6px 0;">${emailParagraph(message)}</p>` : ""}
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:24px 0;">
+        <p style="margin:0 0 12px;font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Récapitulatif</p>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:14px;color:#64748b;">N° facture</span>
+          <strong style="font-size:14px;color:#1f2933;">${invoiceNum}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:14px;color:#64748b;">Date d'émission</span>
+          <strong style="font-size:14px;color:#1f2933;">${issuedStr}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:14px;color:#64748b;">Montant HT</span>
+          <strong style="font-size:14px;color:#1f2933;">${htStr}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+          <span style="font-size:16px;color:#64748b;">Montant TTC</span>
+          <strong style="font-size:18px;color:#1f3b57;">${totalStr}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="font-size:14px;color:#64748b;">Échéance</span>
+          <strong style="font-size:14px;color:#e86218;">${dueStr}</strong>
+        </div>
+      </div>
+      ${paymentLinkHtml}
+      <p style="font-size:13px;color:#64748b;line-height:1.6;margin-top:16px;">
+        La facture détaillée est jointe à cet email en PDF. Pour toute question, n'hésitez pas à nous contacter.
+      </p>
+      <p style="font-size:14px;color:#1f2933;margin-top:24px;">Cordialement,<br /><strong>${companyName}</strong></p>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 32px;font-size:11px;color:#94a3b8;">
+      Ce document a été généré via ChantierDevis. Pour toute question, contactez directement l'émetteur.
+    </div>
+  </div>
+</body></html>`;
+
+  const result = await sendTransactionalEmail({
+    to: toEmail,
+    subject: `Facture ${invoice.invoiceNumber} — ${companyName}`,
+    html,
+    text: `Bonjour ${invoice.client.companyName || invoice.client.name},\n\nVeuillez trouver ci-joint la facture ${invoice.invoiceNumber}.\nMontant TTC : ${totalStr} — Échéance : ${dueStr}.\n\n${message}\n\nCordialement,\n${company?.companyName ?? ""}`,
+  });
+
+  if (result.status === "SENT") {
+    revalidatePath(`/app/invoices/${invoiceId}`);
+    redirect(`/app/invoices/${invoiceId}?emailed=1`);
+  } else {
+    redirect(`/app/invoices/${invoiceId}?email=failed`);
+  }
+}

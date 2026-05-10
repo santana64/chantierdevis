@@ -209,10 +209,22 @@ export async function getQuoteDetail(quoteId: string) {
   return { user, company, quote };
 }
 
-export async function getClientsData() {
+export async function getClientsData(q?: string) {
   const { user } = await getAppContext();
   const clients = await prisma.client.findMany({
-    where: { userId: user.id },
+    where: {
+      userId: user.id,
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q, mode: "insensitive" } },
+              { companyName: { contains: q, mode: "insensitive" } },
+              { email: { contains: q, mode: "insensitive" } },
+              { billingCity: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     include: {
       quotes: { orderBy: { updatedAt: "desc" } },
       invoices: { select: { totalTtcCents: true, status: true } },

@@ -1,4 +1,4 @@
-import { Ban, CheckCircle2, Download, ExternalLink, Send } from "lucide-react";
+import { Ban, Bell, CheckCircle2, Download, ExternalLink, Mail, Send } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
@@ -10,6 +10,7 @@ import {
   markInvoicePaidAction,
   cancelInvoiceAction,
   createInvoicePaymentLinkAction,
+  sendInvoiceEmailAction,
 } from "@/server/actions";
 import InvoicePaymentLinkButton from "./InvoicePaymentLinkButton";
 
@@ -40,6 +41,9 @@ export default async function InvoiceDetailPage({
 
   const issuedNotice = sp.issued === "1";
   const paidNotice = sp.paid === "1";
+  const emailedNotice = sp.emailed === "1";
+  const emailFailed = sp.email === "failed";
+  const emailInvalid = sp.email === "invalid";
 
   return (
     <>
@@ -61,10 +65,15 @@ export default async function InvoiceDetailPage({
         }
       />
 
-      {(issuedNotice || paidNotice) && (
+      {(issuedNotice || paidNotice || emailedNotice) && (
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
           <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
-          {paidNotice ? "Facture marquée comme payée." : "Facture émise avec succès."}
+          {paidNotice ? "Facture marquée comme payée." : emailedNotice ? "Facture envoyée par email avec succès." : "Facture émise avec succès."}
+        </div>
+      )}
+      {(emailFailed || emailInvalid) && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+          {emailInvalid ? "Adresse email invalide." : "L'envoi de l'email a échoué. Réessayez ou vérifiez la configuration Resend."}
         </div>
       )}
 
@@ -184,6 +193,41 @@ export default async function InvoiceDetailPage({
               <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
               <span className="font-semibold">Facture réglée · {formatMoney(invoice.amountPaidCents)}</span>
             </div>
+          )}
+
+          {/* Send by email */}
+          {invoice.status !== "CANCELLED" && invoice.status !== "DRAFT" && (
+            <Card>
+              <CardHeader
+                title="Envoyer par email"
+                description="Transmettez la facture directement à votre client."
+              />
+              <div className="p-4">
+                <form action={sendInvoiceEmailAction.bind(null, invoice.id)} className="grid gap-3">
+                  <input
+                    name="toEmail"
+                    type="email"
+                    defaultValue={invoice.client.email ?? ""}
+                    placeholder="Email du client"
+                    required
+                    className="h-9 w-full rounded-lg border border-border bg-white px-3 text-sm placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  />
+                  <textarea
+                    name="message"
+                    rows={2}
+                    placeholder="Message optionnel…"
+                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none"
+                  />
+                  <button
+                    type="submit"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent/90"
+                  >
+                    <Mail className="h-4 w-4" />
+                    Envoyer la facture
+                  </button>
+                </form>
+              </div>
+            </Card>
           )}
 
           {/* Stripe payment link */}

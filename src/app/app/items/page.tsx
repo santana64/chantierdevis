@@ -184,7 +184,7 @@ export default async function ItemsPage({
                         <p className="mt-1 text-sm text-muted">{tradeLabels[item.trade]} · {unitLabels[item.unit]} · utilisé {item._count.quoteLines} fois</p>
                         <p className="mt-2 max-w-2xl text-sm text-slate-700">{item.description}</p>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-sm lg:min-w-[360px]">
+                      <div className="grid grid-cols-4 gap-2 text-sm lg:min-w-[460px]">
                         <div className="rounded-md bg-white p-3">
                           <p className="text-xs text-muted">Prix HT</p>
                           <p className="font-bold">{formatMoney(item.defaultUnitPriceCents)}</p>
@@ -196,6 +196,28 @@ export default async function ItemsPage({
                         <div className="rounded-md bg-white p-3">
                           <p className="text-xs text-muted">TVA</p>
                           <p className="font-bold">{Number(item.defaultVatRate).toLocaleString("fr-FR")} %</p>
+                        </div>
+                        <div className={`rounded-md p-3 ${
+                          item.defaultUnitPriceCents > 0
+                            ? (() => {
+                                const m = ((item.defaultUnitPriceCents - item.defaultCostCents) / item.defaultUnitPriceCents) * 100;
+                                return m >= 40 ? "bg-green-50" : m >= 20 ? "bg-amber-50" : "bg-red-50";
+                              })()
+                            : "bg-white"
+                        }`}>
+                          <p className="text-xs text-muted">Marge</p>
+                          <p className={`font-bold ${
+                            item.defaultUnitPriceCents > 0
+                              ? (() => {
+                                  const m = ((item.defaultUnitPriceCents - item.defaultCostCents) / item.defaultUnitPriceCents) * 100;
+                                  return m >= 40 ? "text-green-700" : m >= 20 ? "text-amber-700" : "text-red-700";
+                                })()
+                              : ""
+                          }`}>
+                            {item.defaultUnitPriceCents > 0
+                              ? `${Math.round(((item.defaultUnitPriceCents - item.defaultCostCents) / item.defaultUnitPriceCents) * 100)} %`
+                              : "—"}
+                          </p>
                         </div>
                       </div>
                     </div>

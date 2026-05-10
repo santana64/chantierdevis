@@ -1,4 +1,4 @@
-import { Trash2, Users } from "lucide-react";
+import { Search, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/app-shell";
 import { Button, Card, CardHeader, EmptyState, Field, inputClass } from "@/components/ui";
@@ -14,14 +14,35 @@ export default async function ClientsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const { clients } = await getClientsData();
+  const q = Array.isArray(params.q) ? params.q[0] : params.q;
+  const { clients } = await getClientsData(q);
 
   return (
     <>
       <PageHeader
         title="Clients"
         description="Gérez les coordonnées de facturation et les adresses chantier par défaut."
+        action={
+          <form className="relative">
+            <Search aria-hidden className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <input
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Nom, société, email, ville…"
+              className="h-9 w-full rounded-lg border border-border bg-white pl-9 pr-3 text-sm placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:w-64"
+            />
+          </form>
+        }
       />
+
+      {q ? (
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm text-blue-800">
+          {clients.length} résultat{clients.length !== 1 ? "s" : ""} pour «{q}» ·{" "}
+          <Link href="/app/clients" className="font-semibold underline underline-offset-4">
+            Voir tous les clients
+          </Link>
+        </div>
+      ) : null}
 
       {params.error === "client-used" ? (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">

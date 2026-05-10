@@ -62,7 +62,7 @@ export default async function BillingPage({
       {/* Current plan */}
       <Card className="mb-6">
         <CardHeader title="Votre formule actuelle" />
-        <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <div className="rounded-xl border border-border bg-white p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Formule</p>
             <p className="mt-2 text-2xl font-bold text-foreground">
@@ -83,6 +83,12 @@ export default async function BillingPage({
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Devis utilisés</p>
             <div className="mt-2">
               <UsageBar used={usage.quotes} limit={PLAN_LIMITS[user.plan].quotes} />
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-white p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Ouvrages bibliothèque</p>
+            <div className="mt-2">
+              <UsageBar used={usage.workItems} limit={PLAN_LIMITS[user.plan].workItems} />
             </div>
           </div>
         </div>
