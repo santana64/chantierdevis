@@ -1,0 +1,487 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VatMode {
+  STANDARD
+  FRANCHISE_BASE
+}
+
+enum ClientType {
+  INDIVIDUAL
+  PROFESSIONAL
+}
+
+enum Trade {
+  PLUMBING
+  ELECTRICITY
+  PAINTING
+  MASONRY
+  ROOFING
+  CARPENTRY
+  TILING
+  HEATING
+  INSULATION
+  GENERAL_RENOVATION
+  OTHER
+}
+
+enum Unit {
+  UNIT
+  HOUR
+  DAY
+  M2
+  M3
+  ML
+  PACKAGE
+}
+
+enum QuoteStatus {
+  DRAFT
+  READY
+  SENT
+  ACCEPTED
+  REFUSED
+  EXPIRED
+  ARCHIVED
+}
+
+enum ComplianceStatus {
+  INCOMPLETE
+  WARNING
+  READY
+}
+
+enum QuoteLineType {
+  MATERIAL
+  LABOR
+  TRAVEL
+  SERVICE
+  DISCOUNT
+  SECTION
+}
+
+enum QuoteEventType {
+  CREATED
+  UPDATED
+  PDF_GENERATED
+  SENT
+  FOLLOW_UP_ADDED
+  ACCEPTED
+  REFUSED
+  EXPIRED
+  DUPLICATED
+  NOTE
+}
+
+enum GeneratedDocumentType {
+  QUOTE_PDF
+  PRINTABLE_HTML
+  ACCEPTANCE_COPY
+}
+
+enum FollowUpStatus {
+  PENDING
+  DONE
+  CANCELLED
+}
+
+enum SubscriptionPlan {
+  FREE
+  SOLO
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum DataRequestType {
+  EXPORT
+  DELETION
+}
+
+enum DataRequestStatus {
+  REQUESTED
+  COMPLETED
+  FAILED
+}
+
+enum AuthTokenPurpose {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+model User {
+  id                           String             @id @default(cuid())
+  email                        String             @unique
+  name                         String
+  passwordHash                 String?
+  emailVerifiedAt              DateTime?
+  stripeCustomerId             String?            @unique
+  stripeSubscriptionId         String?            @unique
+  plan                         SubscriptionPlan   @default(FREE)
+  subscriptionStatus           SubscriptionStatus @default(INACTIVE)
+  subscriptionCurrentPeriodEnd DateTime?
+  companyProfile               CompanyProfile?
+  sessions                     AppSession[]
+  clients                      Client[]
+  workItems                    WorkItem[]
+  quotes                       Quote[]
+  invoices                     Invoice[]
+  emailDeliveries              EmailDelivery[]
+  dataRequests                 DataRequest[]
+  auditLogs                    AuditLog[]
+  authTokens                   AuthToken[]
+  createdAt                    DateTime           @default(now())
+  updatedAt                    DateTime           @updatedAt
+}
+
+model AppSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuthToken {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose    AuthTokenPurpose
+  tokenHash  String           @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime         @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+model AuthRateLimit {
+  id              String    @id @default(cuid())
+  identifierHash  String
+  action          String
+  attempts        Int       @default(0)
+  windowStartedAt DateTime  @default(now())
+  lockedUntil     DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([identifierHash, action])
+  @@index([lockedUntil])
+}
+
+model CompanyProfile {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName              String
+  legalForm                String?
+  ownerName                String?
+  siret                    String?
+  siren                    String?
+  vatNumber                String?
+  vatMode                  VatMode  @default(STANDARD)
+  address                  String
+  postalCode               String
+  city                     String
+  phone                    String?
+  email                    String?
+  website                  String?
+  insuranceProvider        String?
+  insurancePolicyNumber    String?
+  decennaleMention         String?
+  defaultPaymentTerms      String
+  defaultQuoteValidityDays Int      @default(30)
+  defaultDepositPercent    Decimal? @db.Decimal(5, 2)
+  defaultSignature         String?
+  documentFooterText       String?  @db.Text
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model Client {
+  id                        String     @id @default(cuid())
+  userId                    String
+  user                      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                      ClientType
+  name                      String
+  companyName               String?
+  email                     String?
+  phone                     String?
+  billingAddress            String
+  billingPostalCode         String
+  billingCity               String
+  defaultWorkSiteAddress    String?
+  defaultWorkSitePostalCode String?
+  defaultWorkSiteCity       String?
+  notes                     String?    @db.Text
+  quotes                    Quote[]
+  invoices                  Invoice[]
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+
+  @@index([userId, name])
+}
+
+model WorkItem {
+  id                    String      @id @default(cuid())
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String      @db.Text
+  trade                 Trade
+  unit                  Unit
+  defaultUnitPriceCents Int
+  defaultCostCents      Int
+  defaultVatRate        Decimal     @db.Decimal(5, 2)
+  defaultLaborHours     Decimal?    @db.Decimal(6, 2)
+  notes                 String?     @db.Text
+  quoteLines            QuoteLine[]
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([userId, trade])
+  @@index([userId, title])
+}
+
+model Quote {
+  id                    String                   @id @default(cuid())
+  userId                String
+  user                  User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId              String
+  client                Client                   @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  quoteNumber           String
+  status                QuoteStatus              @default(DRAFT)
+  trade                 Trade?
+  title                 String
+  projectDescription    String?                  @db.Text
+  workSiteAddress       String
+  workSitePostalCode    String
+  workSiteCity          String
+  issueDate             DateTime
+  validUntil            DateTime
+  estimatedStartDate    DateTime?
+  estimatedDurationText String?
+  isQuotePaid           Boolean                  @default(false)
+  quoteFeeCents         Int?
+  paymentTerms          String
+  depositPercent        Decimal?                 @db.Decimal(5, 2)
+  depositAmountCents    Int?
+  notesToClient         String?                  @db.Text
+  internalNotes         String?                  @db.Text
+  subtotalHtCents       Int                      @default(0)
+  totalVatCents         Int                      @default(0)
+  totalTtcCents         Int                      @default(0)
+  totalCostCents        Int                      @default(0)
+  grossMarginCents      Int                      @default(0)
+  grossMarginRate       Decimal                  @default(0) @db.Decimal(7, 2)
+  complianceStatus      ComplianceStatus         @default(INCOMPLETE)
+  lines                 QuoteLine[]
+  events                QuoteEvent[]
+  documents             GeneratedQuoteDocument[]
+  followUpReminders     FollowUpReminder[]
+  invoices              Invoice[]
+  emailDeliveries       EmailDelivery[]
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  @@unique([userId, quoteNumber])
+  @@index([userId, status])
+  @@index([userId, issueDate])
+}
+
+model QuoteLine {
+  id               String        @id @default(cuid())
+  quoteId          String
+  quote            Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  workItemId       String?
+  workItem         WorkItem?     @relation(fields: [workItemId], references: [id], onDelete: SetNull)
+  invoiceLines     InvoiceLine[]
+  position         Int
+  type             QuoteLineType
+  title            String
+  description      String?       @db.Text
+  quantity         Decimal       @db.Decimal(10, 2)
+  unit             Unit
+  unitPriceHtCents Int
+  unitCostCents    Int?
+  vatRate          Decimal       @db.Decimal(5, 2)
+  totalHtCents     Int
+  totalVatCents    Int
+  totalTtcCents    Int
+  totalCostCents   Int?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([quoteId, position])
+}
+
+model QuoteEvent {
+  id          String         @id @default(cuid())
+  quoteId     String
+  quote       Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  type        QuoteEventType
+  title       String
+  description String?        @db.Text
+  eventDate   DateTime
+  createdAt   DateTime       @default(now())
+
+  @@index([quoteId, eventDate])
+}
+
+model GeneratedQuoteDocument {
+  id            String                @id @default(cuid())
+  quoteId       String
+  quote         Quote                 @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  type          GeneratedDocumentType
+  title         String
+  contentHtml   String                @db.Text
+  contentText   String                @db.Text
+  contentBase64 String?               @db.Text
+  mimeType      String?
+  fileName      String?
+  emailedAt     DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([quoteId, createdAt])
+}
+
+model FollowUpReminder {
+  id        String         @id @default(cuid())
+  quoteId   String
+  quote     Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  dueDate   DateTime
+  status    FollowUpStatus @default(PENDING)
+  note      String?        @db.Text
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([quoteId, status])
+  @@index([dueDate, status])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quoteId         String
+  quote           Quote         @relation(fields: [quoteId], references: [id], onDelete: Restrict)
+  clientId        String
+  client          Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  invoiceNumber   String
+  status          InvoiceStatus @default(DRAFT)
+  issueDate       DateTime
+  dueDate         DateTime
+  paymentTerms    String
+  subtotalHtCents Int           @default(0)
+  totalVatCents   Int           @default(0)
+  totalTtcCents   Int           @default(0)
+  amountPaidCents Int           @default(0)
+  notesToClient   String?       @db.Text
+  lines           InvoiceLine[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([userId, invoiceNumber])
+  @@unique([quoteId])
+  @@index([userId, status])
+}
+
+model InvoiceLine {
+  id               String     @id @default(cuid())
+  invoiceId        String
+  invoice          Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  quoteLineId      String?
+  quoteLine        QuoteLine? @relation(fields: [quoteLineId], references: [id], onDelete: SetNull)
+  position         Int
+  title            String
+  description      String?    @db.Text
+  quantity         Decimal    @db.Decimal(10, 2)
+  unit             Unit
+  unitPriceHtCents Int
+  vatRate          Decimal    @db.Decimal(5, 2)
+  totalHtCents     Int
+  totalVatCents    Int
+  totalTtcCents    Int
+
+  @@index([invoiceId, position])
+}
+
+model EmailDelivery {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quoteId           String?
+  quote             Quote?              @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  toEmail           String
+  subject           String
+  status            EmailDeliveryStatus @default(PENDING)
+  provider          String?
+  providerMessageId String?
+  errorMessage      String?             @db.Text
+  sentAt            DateTime?
+  createdAt         DateTime            @default(now())
+
+  @@index([userId, createdAt])
+  @@index([quoteId])
+}
+
+model DataRequest {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        DataRequestType
+  status      DataRequestStatus @default(REQUESTED)
+  completedAt DateTime?
+  createdAt   DateTime          @default(now())
+
+  @@index([userId, type])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  resource  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
