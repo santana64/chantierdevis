@@ -346,7 +346,7 @@ export function QuoteEditor({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+    <div className="grid gap-6 pb-20 xl:grid-cols-[minmax(0,1fr)_380px] xl:pb-0">
       <div className="space-y-6">
         {error ? <WarningNotice title="Enregistrement impossible">{error}</WarningNotice> : null}
 
@@ -598,6 +598,22 @@ export function QuoteEditor({
             </table>
           </div>
         </Card>
+      </div>
+
+      {/* Mobile sticky save bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white/95 px-4 py-3 backdrop-blur-sm xl:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-muted">Total TTC</p>
+            <p className="text-base font-bold tabular-nums">
+              {formatMoney(company.vatMode === "FRANCHISE_BASE" ? totals.subtotalHtCents : totals.totalTtcCents)}
+            </p>
+          </div>
+          <Button type="button" onClick={submit} disabled={isPending} className="shrink-0">
+            <Save aria-hidden className="h-4 w-4" />
+            {isPending ? "Enregistrement…" : initialQuote ? "Mettre à jour" : "Enregistrer"}
+          </Button>
+        </div>
       </div>
 
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">

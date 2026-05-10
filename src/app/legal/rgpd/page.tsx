@@ -43,8 +43,11 @@ export default function GdprPage() {
           <p className="mt-2">Pour exercer vos droits RGPD, plusieurs options s&apos;offrent à vous :</p>
           <ul className="mt-2 list-disc space-y-2 pl-5">
             <li>
-              <strong>Export de vos données :</strong> depuis l&apos;espace &ldquo;Données et RGPD&rdquo;
-              de l&apos;application, vous pouvez télécharger l&apos;intégralité de vos données au
+              <strong>Export de vos données :</strong> depuis{" "}
+              <a href="/app/data" className="text-primary underline">
+                Paramètres → Données
+              </a>{" "}
+              dans l&apos;application, vous pouvez télécharger l&apos;intégralité de vos données au
               format JSON.
             </li>
             <li>

@@ -7,6 +7,9 @@ import {
   computeAcceptanceRate,
   computeAverageMargin,
   evaluateQuoteCompliance,
+  formatFrenchDate,
+  formatMoney,
+  formatShortFrenchDate,
   generateQuoteNumber,
   getQuoteFinancialErrors,
   getQuoteNextAction,
@@ -314,6 +317,56 @@ describe("quote PDF generation", () => {
     });
 
     expect(pdf.byteLength).toBeGreaterThan(1000);
+  });
+});
+
+describe("formatMoney", () => {
+  // Normalize locale-specific Unicode whitespace to plain space so tests
+  // remain stable across ICU versions and Node environments.
+  function norm(s: string) {
+    return s.replace(/[  ]/g, " ");
+  }
+
+  it("formats zero", () => {
+    expect(norm(formatMoney(0))).toBe("0,00 €");
+  });
+
+  it("formats whole euros", () => {
+    expect(norm(formatMoney(100000))).toBe("1 000,00 €");
+  });
+
+  it("formats cents correctly", () => {
+    expect(norm(formatMoney(4423))).toBe("44,23 €");
+  });
+
+  it("rounds half-cents consistently", () => {
+    expect(norm(formatMoney(1))).toBe("0,01 €");
+    expect(norm(formatMoney(99))).toBe("0,99 €");
+  });
+
+  it("formats large amounts with thousand separator", () => {
+    expect(norm(formatMoney(1000000))).toBe("10 000,00 €");
+  });
+});
+
+describe("formatFrenchDate / formatShortFrenchDate", () => {
+  it("formats a known date in long French format", () => {
+    expect(formatFrenchDate(new Date("2026-04-01"))).toBe("01 avril 2026");
+  });
+
+  it("formats a known date in short format dd/mm/yyyy", () => {
+    expect(formatShortFrenchDate(new Date("2026-04-01"))).toBe("01/04/2026");
+  });
+
+  it("returns fallback for null/undefined", () => {
+    expect(formatFrenchDate(null)).toBe("Non renseignée");
+    expect(formatFrenchDate(undefined)).toBe("Non renseignée");
+    expect(formatShortFrenchDate(null)).toBe("-");
+    expect(formatShortFrenchDate(undefined)).toBe("-");
+  });
+
+  it("accepts an ISO string", () => {
+    expect(formatShortFrenchDate("2026-12-25")).toBe("25/12/2026");
   });
 });
 

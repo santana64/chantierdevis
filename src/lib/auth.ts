@@ -7,8 +7,6 @@ import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 
 export const SESSION_COOKIE = "cd_session";
-export const DEMO_USER_EMAIL = "demo@chantierdevis.fr";
-export const DEMO_USER_PASSWORD = "Demo-chantier-2026!";
 
 const SESSION_DAYS = 30;
 
