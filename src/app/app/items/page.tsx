@@ -163,7 +163,17 @@ export default async function ItemsPage({
                   <option key={trade} value={trade}>{tradeLabels[trade]}</option>
                 ))}
               </select>
-              <Button type="submit" variant="secondary">Filtrer</Button>
+              <div className="flex gap-2">
+                <Button type="submit" variant="secondary">Filtrer</Button>
+                {(filters.q || (filters.trade && filters.trade !== "ALL")) && (
+                  <a
+                    href="/app/items"
+                    className="inline-flex h-10 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-sm font-semibold text-muted shadow-sm hover:border-[#c0c9d8] hover:bg-[#fffdf8] hover:text-foreground transition"
+                  >
+                    × Réinitialiser
+                  </a>
+                )}
+              </div>
             </form>
           </Card>
 
@@ -185,15 +195,15 @@ export default async function ItemsPage({
                         <p className="mt-2 max-w-2xl text-sm text-slate-700">{item.description}</p>
                       </div>
                       <div className="grid grid-cols-4 gap-2 text-sm lg:min-w-[460px]">
-                        <div className="rounded-md bg-white p-3">
+                        <div className="rounded-md border border-border bg-white p-3">
                           <p className="text-xs text-muted">Prix HT</p>
                           <p className="font-bold">{formatMoney(item.defaultUnitPriceCents)}</p>
                         </div>
-                        <div className="rounded-md bg-white p-3">
+                        <div className="rounded-md border border-border bg-white p-3">
                           <p className="text-xs text-muted">Coût HT</p>
                           <p className="font-bold">{formatMoney(item.defaultCostCents)}</p>
                         </div>
-                        <div className="rounded-md bg-white p-3">
+                        <div className="rounded-md border border-border bg-white p-3">
                           <p className="text-xs text-muted">TVA</p>
                           <p className="font-bold">{Number(item.defaultVatRate).toLocaleString("fr-FR")} %</p>
                         </div>

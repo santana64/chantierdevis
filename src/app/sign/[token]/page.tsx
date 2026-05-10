@@ -47,6 +47,9 @@ export default async function SignPage({
   const clientName = quote.client.companyName || quote.client.name;
   const isSigned = !!quote.clientSignedAt;
   const isExpired = quote.validUntil < new Date();
+  const unitLabels: Record<string, string> = {
+    UNIT: "u", HOUR: "h", DAY: "j", M2: "m²", M3: "m³", ML: "ml", PACKAGE: "forfait",
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10">
@@ -103,7 +106,7 @@ export default async function SignPage({
                       <td className="py-2.5 pr-4 text-right tabular-nums text-slate-600">
                         {Number(line.quantity).toLocaleString("fr-FR")}
                       </td>
-                      <td className="py-2.5 pr-4 text-slate-400">{line.unit}</td>
+                      <td className="py-2.5 pr-4 text-slate-400">{unitLabels[line.unit] ?? line.unit}</td>
                       <td className="py-2.5 text-right font-semibold tabular-nums text-slate-800">
                         {formatMoney(line.totalHtCents)}
                       </td>
