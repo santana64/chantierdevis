@@ -151,7 +151,6 @@ const pricing = [
     price: "29 €",
     period: "/mois",
     description: "Pour optimiser chaque chantier.",
-    recommended: true,
     items: [
       "Clients illimités",
       "Ouvrages illimités",
@@ -282,19 +281,20 @@ export default function Home() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/register?next=/app/quotes/new"
+              href="/register"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-accent px-6 text-base font-bold text-white shadow-lg transition hover:bg-[#cc5810] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Créer mon premier devis
+              Essayer gratuitement — 0 €
               <ArrowRight aria-hidden className="h-5 w-5" />
             </Link>
             <Link
-              href="#workflow"
+              href="/demo"
               className="inline-flex h-12 items-center justify-center rounded-xl border border-white/20 bg-white/8 px-6 text-base font-semibold text-white transition hover:bg-white/15"
             >
-              Voir le fonctionnement
+              Voir une démo
             </Link>
           </div>
+          <p className="mt-3 text-xs text-white/40">Aucune carte bancaire · Accès immédiat · Annulez à tout moment</p>
 
           <div className="mt-10 flex flex-wrap gap-6">
             {[
@@ -598,15 +598,15 @@ export default function Home() {
             <article
               key={plan.name}
               className={`relative flex flex-col rounded-2xl border p-6 shadow-sm ${
-                plan.recommended
-                  ? "border-accent bg-white shadow-lg ring-2 ring-accent/20"
+                (plan as any).featured
+                  ? "border-green-400 bg-white shadow-xl ring-2 ring-green-400/30"
                   : "border-border bg-card"
               }`}
             >
-              {plan.recommended ? (
+              {(plan as any).badge ? (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-white shadow">
-                    Recommandé
+                  <span className="rounded-full bg-green-500 px-3 py-1 text-xs font-bold text-white shadow">
+                    {(plan as any).badge}
                   </span>
                 </div>
               ) : null}
@@ -614,9 +614,10 @@ export default function Home() {
                 <h3 className="text-base font-bold text-foreground">{plan.name}</h3>
                 <p className="mt-1 text-xs text-muted">{plan.description}</p>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-3xl font-black tabular-nums text-foreground">{plan.price}</span>
+                  <span className={`text-3xl font-black tabular-nums ${(plan as any).featured ? "text-green-600" : "text-foreground"}`}>{plan.price}</span>
                   {plan.period ? <span className="text-sm text-muted">{plan.period}</span> : null}
                 </div>
+                {(plan as any).featured ? <p className="mt-1 text-xs font-semibold text-green-600">Aucune carte bancaire requise</p> : null}
               </div>
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
                 {plan.items.map((item) => (
@@ -630,8 +631,8 @@ export default function Home() {
                 <Link
                   href="/register"
                   className={`flex h-10 w-full items-center justify-center rounded-xl text-sm font-semibold transition ${
-                    plan.recommended
-                      ? "bg-accent text-white hover:bg-[#cc5810]"
+                    (plan as any).featured
+                      ? "bg-green-500 text-white hover:bg-green-600"
                       : "border border-border bg-card text-foreground hover:bg-white hover:border-[#c0c9d8]"
                   }`}
                 >
