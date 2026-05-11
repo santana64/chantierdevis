@@ -90,7 +90,7 @@ const workflow = [
   {
     step: "02",
     title: "L'IA génère les lignes",
-    text: "En quelques secondes, l'assistant IA propose les prestations avec prix, coût de revient et TVA réalistes. Modifiez à votre guise.",
+    text: "En quelques secondes, l'assistant IA propose les prestations avec prix, coût de revient et TVA indicatifs. Ajustez chaque ligne avant d’enregistrer.",
   },
   {
     step: "03",
@@ -270,13 +270,13 @@ export default function Home() {
           </div>
 
           <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            Le devis BTP{" "}
-            <span className="text-accent">le plus intelligent</span>
+            Devis BTP{" "}
+            <span className="text-accent">intelligents, rentables</span>
             {" "}du marché. À 19 €/mois.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
             Décrivez votre chantier, l&apos;IA génère les lignes. Marge visible avant envoi.
-            Signature électronique par WhatsApp. Conformité vérifiée automatiquement.
+            Lien de signature par WhatsApp. Mentions vérifiées automatiquement.
             Sans Excel, sans Word, sans bricolage.
           </p>
 
@@ -301,7 +301,7 @@ export default function Home() {
               { icon: Sparkles, text: "IA pour chaque devis" },
               { icon: TrendingUp, text: "Marge visible avant envoi" },
               { icon: Zap, text: "Sans Word ni Excel" },
-              { icon: Receipt, text: "Facturation Factur-X incluse" },
+              { icon: Receipt, text: "Export XML Factur-X inclus" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2 text-sm text-white/60">
                 <Icon aria-hidden className="h-4 w-4 text-accent" />
@@ -377,7 +377,7 @@ export default function Home() {
                 </div>
                 <div className="rounded-xl bg-white/10 p-4 text-center">
                   <CheckCircle2 aria-hidden className="mx-auto h-6 w-6 text-green-400" />
-                  <p className="mt-1.5 text-xs text-white/70">Conformité OK · 0 mention manquante</p>
+                  <p className="mt-1.5 text-xs text-white/70">Checklist OK · 0 mention manquante détectée</p>
                 </div>
               </div>
             </div>
@@ -478,6 +478,9 @@ export default function Home() {
               </tbody>
             </table>
           </div>
+          <p className="mt-3 text-xs text-center" style={{color:"#94a3b8"}}>
+            Comparatif indicatif basé sur les fonctionnalités publiquement visibles au moment de l’analyse. Données susceptibles d’évoluer.
+          </p>
         </div>
       </section>
 
