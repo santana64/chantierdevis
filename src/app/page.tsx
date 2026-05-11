@@ -6,7 +6,6 @@ import {
   FileSignature,
   Hammer,
   Percent,
-  Quote,
   Receipt,
   Send,
   Shield,
@@ -17,33 +16,26 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const testimonials = [
+const useCases = [
   {
-    name: "Julien M.",
-    role: "Plombier · Île-de-France",
-    text: "Avant ChantierDevis je perdais 2 heures par devis sur Excel. Maintenant l'IA génère les lignes en 30 secondes, je vérifie ma marge et j'envoie. Mes clients signent depuis leur téléphone le soir même.",
-    stars: 5,
+    role: "Situation type — Plombier indépendant",
+    text: "Un artisan qui passait 2 heures par devis sur Excel peut décrire son chantier en langage naturel, laisser l'assistant IA générer les lignes, vérifier la marge et envoyer. Le client signe depuis son téléphone.",
   },
   {
-    name: "Amira B.",
-    role: "Peintre en bâtiment · Lyon",
-    text: "La conformité automatique m'a sauvé plusieurs fois. J'avais oublié le numéro de décennale sur mes anciens devis. Maintenant l'outil me bloque si j'oublie quelque chose. C'est rassurant.",
-    stars: 5,
+    role: "Situation type — Peintre en bâtiment",
+    text: "La checklist de conformité signale les mentions manquantes avant l'envoi : numéro de décennale, SIRET, assurance. Zéro oubli sur un devis envoyé à un maître d'ouvrage.",
   },
   {
-    name: "Thierry C.",
-    role: "Carreleur · Bordeaux",
-    text: "J'ai testé Tolteck et Synobat. ChantierDevis est le seul qui calcule la marge ligne par ligne. Je sais enfin si je gagne de l'argent sur chaque chantier. Et le prix est imbattable.",
-    stars: 5,
+    role: "Situation type — Carreleur",
+    text: "La marge brute est calculée ligne par ligne, coût de revient inclus. L'artisan sait si le chantier est rentable avant même d'envoyer le devis. La facturation Factur-X suit en un clic.",
   },
 ];
 
 const features = [
   {
     icon: Sparkles,
-    title: "IA générative intégrée",
-    text: "Décrivez votre chantier en langage naturel : l'IA génère les lignes de devis avec prix, coût de revient et TVA adaptés au marché BTP français.",
-    badge: "Exclusif",
+    title: "Assistant IA pour vos devis",
+    text: "Décrivez votre chantier en langage naturel : l'assistant génère les lignes de devis avec prix, coût de revient et TVA adaptés au BTP français. Modifiez chaque ligne avant d'envoyer.",
   },
   {
     icon: Percent,
@@ -269,11 +261,11 @@ export default function Home() {
           <div className="mb-6 flex flex-wrap gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-4 py-1.5 text-sm font-semibold text-accent">
               <Sparkles aria-hidden className="h-3.5 w-3.5" />
-              IA générative intégrée — exclusif dans ce segment
+              Assistant IA intégré pour vos devis BTP
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-1.5 text-sm font-semibold text-white/90">
               <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />
-              Signature électronique · PWA mobile
+              Lien de signature · PWA mobile
             </div>
           </div>
 
@@ -321,9 +313,9 @@ export default function Home() {
           {/* Social proof bar */}
           <div className="mt-10 flex flex-wrap items-center gap-6 border-t border-white/10 pt-8">
             {[
-              { value: "2 min", label: "Pour créer un devis complet" },
-              { value: "41 %", label: "Marge moyenne constatée" },
-              { value: "100 %", label: "Conformité Factur-X 2026" },
+              { value: "< 5 min", label: "De la description au devis envoyé" },
+              { value: "0 €", label: "Sans carte bancaire, 14 jours offerts" },
+              { value: "EN 16931", label: "Format Factur-X compatible Chorus Pro" },
             ].map(({ value, label }) => (
               <div key={label} className="text-white">
                 <p className="text-2xl font-black tabular-nums text-accent">{value}</p>
@@ -348,7 +340,7 @@ export default function Home() {
                   <p className="text-xs font-semibold text-accent">
                     ✨ IA — Rénovation salle de bain 8m², plomberie + carrelage
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">6 lignes générées en 2 secondes · Prix marché BTP 2026</p>
+                  <p className="mt-1 text-xs text-slate-500">6 lignes générées · Prix indicatifs BTP, ajustables</p>
                 </div>
                 <div className="space-y-2 text-sm">
                   {[
@@ -452,7 +444,7 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
               ChantierDevis vs la concurrence.
             </h2>
-            <p className="mt-3 text-base text-muted">Seul outil de ce segment avec IA générative intégrée.</p>
+            <p className="mt-3 text-base text-muted">Conçu spécifiquement pour les artisans BTP, avec assistant IA et export Factur-X.</p>
           </div>
           <div className="mt-10 overflow-hidden rounded-2xl border border-border shadow-sm">
             <table className="w-full text-sm">
@@ -489,26 +481,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* USE CASES */}
       <section id="temoignages" className="bg-[#fefcf7] py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-accent">Témoignages</p>
-            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Ce qu&apos;en disent les artisans.</h2>
+            <p className="text-sm font-bold uppercase tracking-widest text-accent">Cas d&apos;usage</p>
+            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Pourquoi les artisans l&apos;utilisent.</h2>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {testimonials.map((t) => (
-              <article key={t.name} className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm">
-                <Quote aria-hidden className="h-8 w-8 text-accent/30" />
-                <p className="flex-1 text-sm leading-relaxed text-muted">&ldquo;{t.text}&rdquo;</p>
+            {useCases.map((uc) => (
+              <article key={uc.role} className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm">
+                <BookOpenText aria-hidden className="h-8 w-8 text-accent/30" />
+                <p className="flex-1 text-sm leading-relaxed text-muted">{uc.text}</p>
                 <div>
-                  <div className="flex gap-0.5 text-accent" aria-label={`${t.stars} étoiles`}>
-                    {[...Array(t.stars)].map((_, i) => (
-                      <span key={i} aria-hidden>★</span>
-                    ))}
-                  </div>
-                  <p className="mt-2 font-bold text-foreground">{t.name}</p>
-                  <p className="text-xs text-muted">{t.role}</p>
+                  <p className="mt-2 font-bold text-foreground text-sm">{uc.role}</p>
                 </div>
               </article>
             ))}
