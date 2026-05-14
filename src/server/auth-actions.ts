@@ -31,7 +31,7 @@ const VERIFY_RESEND_LIMIT = { maxAttempts: 5, windowMinutes: 60, lockMinutes: 60
 const registerSchema = z.object({
   name: z.string().trim().min(2),
   email: z.string().trim().email(),
-  password: z.string().min(10),
+  password: z.string().min(8),
   next: z.string().optional(),
 });
 
