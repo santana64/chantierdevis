@@ -1,5 +1,7 @@
 import { ArrowRight, CheckCircle2, Hammer, Lock, Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getOptionalCurrentUser } from "@/lib/auth";
 import { registerAction } from "@/server/auth-actions";
 import { Button, Field, inputClass } from "@/components/ui";
 import type { Metadata } from "next";
@@ -28,6 +30,9 @@ export default async function RegisterPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const existing = await getOptionalCurrentUser();
+  if (existing) redirect("/app");
+
   const params = await searchParams;
   const next = Array.isArray(params.next) ? params.next[0] : params.next ?? "/app";
   const error = message(Array.isArray(params.error) ? params.error[0] : params.error);

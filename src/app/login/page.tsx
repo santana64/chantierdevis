@@ -1,5 +1,7 @@
 import { Building2, Lock } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getOptionalCurrentUser } from "@/lib/auth";
 import { loginAction } from "@/server/auth-actions";
 import { Button, Field, inputClass } from "@/components/ui";
 
@@ -33,6 +35,9 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const existing = await getOptionalCurrentUser();
+  if (existing) redirect("/app");
+
   const params = await searchParams;
   const next = Array.isArray(params.next) ? params.next[0] : params.next ?? "/app";
   const error =

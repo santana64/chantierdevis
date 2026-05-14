@@ -363,7 +363,7 @@ export async function updateAccountAction(formData: FormData) {
   }
 
   if (newPassword) {
-    if (newPassword.length < 10) redirect("/app/settings?account=weak-password");
+    if (newPassword.length < 8) redirect("/app/settings?account=weak-password");
     const currentHash = await prisma.user.findUnique({ where: { id: user.id }, select: { passwordHash: true } });
     if (!currentHash?.passwordHash || !verifyPassword(currentPassword, currentHash.passwordHash)) {
       redirect("/app/settings?account=wrong-password");

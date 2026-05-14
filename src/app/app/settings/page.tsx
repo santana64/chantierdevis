@@ -80,7 +80,7 @@ export default async function SettingsPage({
       ) : null}
       {params.account === "weak-password" ? (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-          Le nouveau mot de passe doit contenir au moins 10 caractères.
+          Le nouveau mot de passe doit contenir au moins 8 caractères.
         </div>
       ) : null}
 
@@ -353,8 +353,8 @@ export default async function SettingsPage({
           <Field label="Mot de passe actuel">
             <input className={inputClass} name="currentPassword" type="password" autoComplete="current-password" />
           </Field>
-          <Field label="Nouveau mot de passe (10 car. min)">
-            <input className={inputClass} name="newPassword" type="password" autoComplete="new-password" minLength={10} />
+          <Field label="Nouveau mot de passe (8 car. min)">
+            <input className={inputClass} name="newPassword" type="password" autoComplete="new-password" minLength={8} />
           </Field>
           <div>
             <Button type="submit">Mettre à jour le compte</Button>

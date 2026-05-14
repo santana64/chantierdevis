@@ -48,7 +48,7 @@ export default async function BillingPage({
           <strong>Limite atteinte.</strong> Passez sur une offre supérieure pour continuer.
         </div>
       ) : null}
-      {params.error ? (
+      {params.error && params.error !== "no-customer" ? (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
           Paiement non disponible\u00a0: vérifiez la configuration Stripe.
         </div>
@@ -170,9 +170,13 @@ export default async function BillingPage({
               Gérez vos informations de paiement, factures Stripe et annulation d&apos;abonnement.
             </p>
           </div>
-          <form action={createBillingPortalSessionAction}>
-            <Button type="submit" variant="secondary">Ouvrir le portail Stripe</Button>
-          </form>
+          {user.stripeCustomerId ? (
+            <form action={createBillingPortalSessionAction}>
+              <Button type="submit" variant="secondary">Ouvrir le portail Stripe</Button>
+            </form>
+          ) : (
+            <p className="text-sm text-muted italic">Disponible après votre premier abonnement.</p>
+          )}
         </div>
       </Card>
 
