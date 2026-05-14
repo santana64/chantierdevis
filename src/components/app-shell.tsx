@@ -1,7 +1,7 @@
 import { Building2, Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { logoutAction, resendVerificationEmailAction } from "@/server/auth-actions";
+import { logoutAction } from "@/server/auth-actions";
 import type { SubscriptionPlan, User } from "@prisma/client";
 import { MobileNavLinks, SidebarNavLinks } from "./nav-links";
 
@@ -106,25 +106,6 @@ export function AppShell({ children, user, companyName }: { children: ReactNode;
           </nav>
         </header>
 
-        {/* Email verification banner */}
-        {!user.emailVerifiedAt ? (
-          <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-amber-800">
-                <span className="font-semibold">Email non vérifié.</span>{" "}
-                Vérifiez votre adresse pour sécuriser les envois de devis.
-              </p>
-              <form action={resendVerificationEmailAction}>
-                <button
-                  className="shrink-0 text-sm font-semibold text-amber-900 underline underline-offset-4"
-                  type="submit"
-                >
-                  Renvoyer l&apos;email
-                </button>
-              </form>
-            </div>
-          </div>
-        ) : null}
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
