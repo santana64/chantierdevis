@@ -159,7 +159,16 @@ export async function registerAction(formData: FormData) {
   await prisma.auditLog.create({
     data: { userId: user.id, action: "auth.register", resource: "user" },
   });
-  await sendVerificationEmail(user);
+
+  // L'email de verification est optionnel — une erreur ici ne doit pas
+  // bloquer l'inscription. Le compte est cree, la session demarre.
+  try {
+    await sendVerificationEmail(user);
+  } catch {
+    // Email non critique : on log en silence et on continue
+    console.error("[register] sendVerificationEmail failed silently for", user.email);
+  }
+
   await clearAuthFailures("register", parsed.data.email);
   await createSession(user.id);
   redirect(safeNext(parsed.data.next));
