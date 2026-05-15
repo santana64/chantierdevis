@@ -935,7 +935,7 @@ export async function sendQuoteEmailAction(quoteId: string, formData: FormData) 
   const clientName = escapeEmailHtml(quote.client.companyName || quote.client.name);
   const totalStr = (quote.totalTtcCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
   const validUntilStr = new Intl.DateTimeFormat("fr-FR").format(quote.validUntil);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://chantierdevis.fr";
   const signLink = quote.signatureToken ? `${appUrl}/sign/${quote.signatureToken}` : null;
 
   const html = `<!doctype html>

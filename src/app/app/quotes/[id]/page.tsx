@@ -65,7 +65,7 @@ export default async function QuoteDetailPage({
   const query = await searchParams;
   const { company, quote } = await getQuoteDetail(id);
   if (!quote) notFound();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://chantierdevis.fr";
 
   const vatMode = company?.vatMode ?? "STANDARD";
   const calculatedLines = quote.lines.map((line) =>

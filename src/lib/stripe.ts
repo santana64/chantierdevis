@@ -11,8 +11,7 @@ export function getStripe() {
 }
 
 export function getAppUrl() {
-  const url = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
-  if (!url) throw new Error("APP_URL is not configured");
+  const url = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://chantierdevis.fr";
   return url;
 }
 
