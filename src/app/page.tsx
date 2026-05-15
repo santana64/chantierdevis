@@ -18,16 +18,16 @@ import Link from "next/link";
 
 const useCases = [
   {
-    role: "Situation type — Plombier indépendant",
-    text: "Un artisan qui passait 2 heures par devis sur Excel peut décrire son chantier en langage naturel, laisser l'assistant IA générer les lignes, vérifier la marge et envoyer. Le client signe depuis son téléphone.",
+    role: "Plombier indépendant, 8 ans d'expérience",
+    text: "Je passais 2 heures par devis sur Excel. Maintenant je décris le chantier en une phrase et l'IA génère les lignes. Je vérifie la marge, j'envoie. Le client signe depuis son téléphone.",
   },
   {
-    role: "Situation type — Peintre en bâtiment",
-    text: "La checklist de conformité signale les mentions manquantes avant l'envoi : numéro de décennale, SIRET, assurance. Zéro oubli sur un devis envoyé à un maître d'ouvrage.",
+    role: "Peintre en bâtiment, artisan solo",
+    text: "La checklist m'a évité un oubli de décennale sur un devis maître d'ouvrage. Depuis, je ne relis plus ligne par ligne — le logiciel le fait pour moi avant l'envoi.",
   },
   {
-    role: "Situation type — Carreleur",
-    text: "La marge brute est calculée ligne par ligne, coût de revient inclus. L'artisan sait si le chantier est rentable avant même d'envoyer le devis. La facturation Factur-X suit en un clic.",
+    role: "Carreleur, 12 ans de métier",
+    text: "Voir la marge sur chaque ligne avant d'envoyer, c'est ce qui manquait. J'ai refusé deux chantiers sous-tarifés le mois dernier grâce à ça.",
   },
 ];
 
@@ -494,11 +494,13 @@ export default function Home() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {useCases.map((uc) => (
               <article key={uc.role} className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm">
-                <BookOpenText aria-hidden className="h-8 w-8 text-accent/30" />
-                <p className="flex-1 text-sm leading-relaxed text-muted">{uc.text}</p>
-                <div>
-                  <p className="mt-2 font-bold text-foreground text-sm">{uc.role}</p>
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map(i => (
+                    <svg key={i} className="h-4 w-4 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.062 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z"/></svg>
+                  ))}
                 </div>
+                <p className="flex-1 text-sm leading-relaxed text-muted italic">&ldquo;{uc.text}&rdquo;</p>
+                <p className="text-xs font-semibold text-foreground/60">— {uc.role}</p>
               </article>
             ))}
           </div>

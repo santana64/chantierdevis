@@ -186,18 +186,19 @@ export default function DemoPage() {
 
         {/* CTA sous le devis */}
         <div className="mt-8 rounded-2xl bg-[#0f1f31] p-8 text-center text-white">
-          <p className="text-lg font-bold">Ce devis a été généré en 30 secondes.</p>
+          <p className="text-lg font-bold">Maintenant testez avec votre propre chantier.</p>
           <p className="mt-2 text-sm text-white/60">
-            Créez votre compte gratuitement et envoyez votre premier devis aujourd&apos;hui.
+            Décrivez-le en une phrase — l&apos;IA génère vos lignes, vos prix, vos marges.<br />
+            Votre premier devis est prêt en 2 minutes.
           </p>
           <Link
-            href="/register"
+            href="/register?next=/app/quotes/new&utm_source=demo&utm_medium=cta&utm_campaign=demo_to_register"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-green-500 px-8 py-3.5 text-base font-bold text-white shadow-lg transition hover:bg-green-600"
           >
-            Commencer gratuitement — 0 €
+            Créer mon premier devis
             <ArrowRight aria-hidden className="h-5 w-5" />
           </Link>
-          <p className="mt-3 text-xs text-white/40">Aucune carte bancaire · Annulez à tout moment</p>
+          <p className="mt-3 text-xs text-white/40">Aucune carte bancaire · Accès immédiat · 0 €</p>
         </div>
       </section>
 
