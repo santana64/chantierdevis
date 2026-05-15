@@ -22,6 +22,7 @@ import {
   formatShortFrenchDate,
   getQuoteNextAction,
 } from "@/domain/quotes";
+import { SignatureLinkInput } from "./signature-link-input";
 import {
   addFollowUpReminderAction,
   addQuoteNoteAction,
@@ -533,12 +534,7 @@ export default async function QuoteDetailPage({
                 <div className="space-y-3">
                   <p className="text-sm text-muted">Lien de signature actif. Partagez-le avec votre client.</p>
                   <div className="flex items-center gap-2">
-                    <input
-                      readOnly
-                      value={`${appUrl}/sign/${quote.signatureToken}`}
-                      className="w-full rounded-xl border border-border bg-slate-50 px-3 py-2 text-xs font-mono text-foreground"
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                    />
+                    <SignatureLinkInput url={`${appUrl}/sign/${quote.signatureToken}`} />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <a
