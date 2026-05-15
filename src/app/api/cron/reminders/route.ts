@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
               companyProfile: { select: { companyName: true } },
             },
           },
-          documents: {
+          emailDeliveries: {
             where: { status: "SENT" },
             orderBy: { sentAt: "desc" },
             take: 1,
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
 
   for (const reminder of reminders) {
     const { quote } = reminder;
-    const toEmail = quote.documents[0]?.toEmail;
+    const toEmail = quote.emailDeliveries[0]?.toEmail;
 
     if (!toEmail) {
       await prisma.followUpReminder.update({
@@ -136,14 +136,16 @@ export async function GET(req: NextRequest) {
       text: makeText(emailParams),
     });
 
-    if (result.status === "SENT") {
+    const resultStatus = result.status;
+    const resultError = "errorMessage" in result ? result.errorMessage : null;
+    if (resultStatus === "SENT") {
       await prisma.followUpReminder.update({
         where: { id: reminder.id },
         data: { status: "DONE" },
       });
       sent++;
     } else {
-      errors.push(`${reminder.id}: ${result.errorMessage ?? result.status}`);
+      errors.push(`${reminder.id}: ${resultError ?? resultStatus}`);
     }
   }
 
