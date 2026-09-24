@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Clock, Hammer, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { CheckCircle2, Clock, Hammer, Sparkles, TrendingUp, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import { DemoCTA, StickyBar } from "../demo/demo-cta";
 

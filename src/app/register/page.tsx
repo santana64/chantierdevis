@@ -68,7 +68,7 @@ export default async function RegisterPage({
             </div>
             <h2 className="text-2xl font-bold text-[#0f1f31]">Un devis pro, rentable, prêt à signer</h2>
             <p className="mt-2 text-sm text-muted">
-              Décrivez le chantier en langage naturel — l'IA génère les lignes, les prix et les marges.
+              Décrivez le chantier en langage naturel — l&apos;IA génère les lignes, les prix et les marges.
             </p>
           </div>
 

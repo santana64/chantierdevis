@@ -523,11 +523,15 @@ export default async function QuoteDetailPage({
                     Signé par le client le {formatShortFrenchDate(quote.clientSignedAt)}.
                   </p>
                   {quote.clientSignatureData ? (
-                    <img
+                    <>
+                      {/* Signature is a user-generated data URL; Next Image optimization is not applicable. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                       src={quote.clientSignatureData}
                       alt="Signature client"
                       className="mt-3 max-h-20 w-full rounded border border-green-200 bg-white object-contain"
-                    />
+                      />
+                    </>
                   ) : null}
                 </div>
               ) : quote.signatureToken ? (

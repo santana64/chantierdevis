@@ -116,7 +116,19 @@ const comparison = [
   { feature: "Prix mensuel HT", chantierdevis: "19 €", tolteck: "29 €", synobat: "25 €" },
 ];
 
-const pricing = [
+type PricingPlan = {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  items: string[];
+  cta: string;
+  ctaVariant: "primary" | "secondary";
+  featured?: boolean;
+  badge?: string;
+};
+
+const pricing: PricingPlan[] = [
   {
     name: "Gratuit",
     price: "0 €",
@@ -600,15 +612,15 @@ export default function Home() {
             <article
               key={plan.name}
               className={`relative flex flex-col rounded-2xl border p-6 shadow-sm ${
-                (plan as any).featured
+                plan.featured
                   ? "border-green-400 bg-white shadow-xl ring-2 ring-green-400/30"
                   : "border-border bg-card"
               }`}
             >
-              {(plan as any).badge ? (
+              {plan.badge ? (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="rounded-full bg-green-500 px-3 py-1 text-xs font-bold text-white shadow">
-                    {(plan as any).badge}
+                    {plan.badge}
                   </span>
                 </div>
               ) : null}
@@ -616,10 +628,10 @@ export default function Home() {
                 <h3 className="text-base font-bold text-foreground">{plan.name}</h3>
                 <p className="mt-1 text-xs text-muted">{plan.description}</p>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className={`text-3xl font-black tabular-nums ${(plan as any).featured ? "text-green-600" : "text-foreground"}`}>{plan.price}</span>
+                  <span className={`text-3xl font-black tabular-nums ${plan.featured ? "text-green-600" : "text-foreground"}`}>{plan.price}</span>
                   {plan.period ? <span className="text-sm text-muted">{plan.period}</span> : null}
                 </div>
-                {(plan as any).featured ? <p className="mt-1 text-xs font-semibold text-green-600">Aucune carte bancaire requise</p> : null}
+                {plan.featured ? <p className="mt-1 text-xs font-semibold text-green-600">Aucune carte bancaire requise</p> : null}
               </div>
               <ul className="mt-6 flex-1 space-y-2.5 text-sm">
                 {plan.items.map((item) => (
@@ -633,7 +645,7 @@ export default function Home() {
                 <Link
                   href="/register"
                   className={`flex h-10 w-full items-center justify-center rounded-xl text-sm font-semibold transition ${
-                    (plan as any).featured
+                    plan.featured
                       ? "bg-green-500 text-white hover:bg-green-600"
                       : "border border-border bg-card text-foreground hover:bg-white hover:border-[#c0c9d8]"
                   }`}

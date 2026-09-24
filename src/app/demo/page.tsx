@@ -85,7 +85,7 @@ export default function DemoPage() {
           </h1>
           <p className="mt-4 text-base text-white/65">
             Exemple réel : rénovation salle de bain 8 m², plomberie + carrelage.
-            L'IA a généré ces 6 lignes à partir d'une description en langage naturel.
+            L&apos;IA a généré ces 6 lignes à partir d&apos;une description en langage naturel.
           </p>
 
           {/* Stats rapides */}

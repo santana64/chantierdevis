@@ -1,4 +1,4 @@
-import { Ban, Bell, CalendarDays, CheckCircle2, Download, ExternalLink, Mail, Send } from "lucide-react";
+import { Ban, CalendarDays, CheckCircle2, Download, ExternalLink, Mail, Send } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
@@ -9,7 +9,6 @@ import {
   issueInvoiceAction,
   markInvoicePaidAction,
   cancelInvoiceAction,
-  createInvoicePaymentLinkAction,
   sendInvoiceEmailAction,
   updateInvoiceDueDateAction,
 } from "@/server/actions";
